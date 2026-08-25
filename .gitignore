@@ -1,0 +1,6 @@
+﻿# Local development and OS files
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/

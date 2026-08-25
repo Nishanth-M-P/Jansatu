@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Karnataka Civic Issues Dashboard - JanSetu AI</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Geist:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="css/styles.css"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#90a8ff",
+            "surface-container-lowest": "#ffffff",
+            "background": "#f8f9fa",
+            "on-error-container": "#93000a",
+            "on-secondary-container": "#00714d",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#6ffbbe",
+            "on-error": "#ffffff",
+            "on-tertiary-container": "#ef9900",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#264191",
+            "surface-dim": "#d9dadb",
+            "on-primary": "#ffffff",
+            "inverse-primary": "#b6c4ff",
+            "on-primary-fixed": "#00164e",
+            "on-secondary": "#ffffff",
+            "surface-container-high": "#e7e8e9",
+            "inverse-surface": "#2e3132",
+            "secondary": "#006c49",
+            "on-secondary-fixed": "#002113",
+            "tertiary-container": "#5c3800",
+            "surface-variant": "#e1e3e4",
+            "primary": "#00236f",
+            "on-secondary-fixed-variant": "#005236",
+            "tertiary-fixed": "#ffddb8",
+            "on-surface-variant": "#444651",
+            "error": "#ba1a1a",
+            "on-surface": "#191c1d",
+            "on-tertiary-fixed-variant": "#653e00",
+            "surface-container-low": "#f3f4f5",
+            "surface-bright": "#f8f9fa",
+            "outline-variant": "#c5c5d3",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container-highest": "#e1e3e4",
+            "primary-fixed": "#dce1ff",
+            "outline": "#757682",
+            "surface-tint": "#4059aa",
+            "secondary-fixed-dim": "#4edea3",
+            "primary-container": "#1e3a8a",
+            "primary-fixed-dim": "#b6c4ff",
+            "on-background": "#191c1d",
+            "inverse-on-surface": "#f0f1f2",
+            "secondary-container": "#6cf8bb",
+            "tertiary": "#3e2400",
+            "surface-container": "#edeeef",
+            "on-tertiary-fixed": "#2a1700",
+            "surface": "#f8f9fa"
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background text-on-surface font-body-md min-h-screen flex flex-col antialiased">
+  <!-- TopNavBar -->
+  <header class="bg-surface border-b border-outline-variant shadow-sm sticky top-0 z-50">
+    <div class="flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 max-w-max-width mx-auto h-16">
+      <div class="flex items-center gap-md shrink-0">
+        <a href="index.html" class="font-display-lg text-[22px] font-black text-primary flex items-center gap-2 whitespace-nowrap shrink-0">
+          <span class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">JS</span>
+          <span data-i18n="brand" class="whitespace-nowrap">JanSetu AI</span>
+        </a>
+      </div>
+      <nav class="hidden lg:flex items-center gap-4 xl:gap-6 h-full whitespace-nowrap flex-nowrap shrink-0">
+        <a class="text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-colors flex items-center h-full px-1.5 whitespace-nowrap shrink-0" href="report.html" data-i18n="btnReport">Report a Problem</a>
+        <a class="text-primary border-b-2 border-primary font-bold pb-1 flex items-center h-full text-xs xl:text-sm px-1.5 whitespace-nowrap shrink-0" href="dashboard.html" data-i18n="btnExplore">Public Issues</a>
+        <a class="text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-colors flex items-center h-full px-1.5 whitespace-nowrap shrink-0" href="#constituency-section" data-i18n="btnConstituency">Constituency Explorer</a>
+      </nav>
+      <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 flex-nowrap">
+        <!-- Dark Mode Toggle Button -->
+        <button onclick="toggleDarkMode()" class="theme-toggle-btn h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap" title="Toggle Dark/Light Mode">
+          <span class="theme-toggle-icon material-symbols-outlined text-[16px] text-amber-500">dark_mode</span>
+          <span class="theme-toggle-text hidden sm:inline whitespace-nowrap">Dark</span>
+        </button>
+
+        <!-- Language Switcher -->
+        <button id="lang-toggle-btn" onclick="toggleLanguage()" title="Toggle English/Kannada" class="h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap">
+          <span class="material-symbols-outlined text-[16px] text-primary">translate</span>
+          <span class="whitespace-nowrap">English/ಕನ್ನಡ</span>
+        </button>
+
+        <a href="authority.html" class="hidden md:inline-flex h-9 px-3.5 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all font-semibold text-xs items-center justify-center gap-1.5 shadow-xs bg-surface shrink-0 whitespace-nowrap">
+          <span class="material-symbols-outlined text-[16px]">shield_person</span>
+          <span data-i18n="btnAuthority" class="whitespace-nowrap">Authority Portal</span>
+        </a>
+
+        <!-- Citizen Login / Profile Button (Next to Authority Portal) -->
+        <div class="auth-user-slot shrink-0 flex items-center"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Canvas -->
+  <main class="flex-1 max-w-max-width mx-auto p-margin-mobile md:p-margin-desktop w-full pb-24">
+    <header class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-md border-b border-outline-variant pb-6">
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs mb-2">
+          <span class="material-symbols-outlined text-[16px]">location_on</span> Karnataka State Civic Grid
+        </div>
+        <h1 class="font-headline-lg text-3xl font-black text-on-surface">Karnataka Civic Issues Dashboard</h1>
+        <p class="font-body-md text-sm text-on-surface-variant mt-xs flex items-center gap-xs">
+          <span class="material-symbols-outlined text-[16px] text-secondary">verified_user</span>
+          All citizen identity information is protected by JanSetu Shield. Displaying aggregated data only.
+        </p>
+      </div>
+      <div class="flex gap-sm">
+        <a href="report.html" class="flex items-center gap-xs px-md py-sm bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:opacity-90 transition-opacity font-bold shadow-sm">
+          <span class="material-symbols-outlined text-[18px]">add_circle</span> Report New Issue
+        </a>
+        <button onclick="showToast('Exporting Report', 'Generating summary report for Mysuru Division...', 'info')" class="flex items-center gap-xs px-md py-sm bg-surface text-primary border border-primary rounded-xl font-label-md text-label-md hover:bg-surface-container-high transition-colors font-medium">
+          <span class="material-symbols-outlined text-[18px]">download</span> Export
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md mb-8">
+      <div class="bg-surface rounded-2xl p-md border border-outline-variant level-2-shadow">
+        <div class="flex justify-between items-start mb-sm">
+          <h3 class="font-label-md text-label-md text-on-surface-variant font-semibold">Total Reports</h3>
+          <div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+            <span class="material-symbols-outlined text-[18px]">assessment</span>
+          </div>
+        </div>
+        <p id="stat-total-reports" class="font-headline-lg text-2xl font-black text-on-surface">12,482</p>
+        <p class="font-label-sm text-label-sm text-secondary mt-xs flex items-center gap-1 font-bold">
+          <span class="material-symbols-outlined text-[14px]">trending_up</span> +12% this month
+        </p>
+      </div>
+
+      <div class="bg-surface rounded-2xl p-md border border-outline-variant level-2-shadow">
+        <div class="flex justify-between items-start mb-sm">
+          <h3 class="font-label-md text-label-md text-on-surface-variant font-semibold">Resolved</h3>
+          <div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+            <span class="material-symbols-outlined text-[18px]">check_circle</span>
+          </div>
+        </div>
+        <p id="stat-resolved-reports" class="font-headline-lg text-2xl font-black text-on-surface">7,821</p>
+        <div class="w-full bg-surface-variant rounded-full h-1.5 mt-sm">
+          <div class="bg-secondary h-1.5 rounded-full" style="width: 62%"></div>
+        </div>
+      </div>
+
+      <div class="bg-surface rounded-2xl p-md border border-outline-variant level-2-shadow">
+        <div class="flex justify-between items-start mb-sm">
+          <h3 class="font-label-md text-label-md text-on-surface-variant font-semibold">Under Review</h3>
+          <div class="w-8 h-8 rounded-full bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed">
+            <span class="material-symbols-outlined text-[18px]">pending_actions</span>
+          </div>
+        </div>
+        <p id="stat-review-reports" class="font-headline-lg text-2xl font-black text-on-surface">3,102</p>
+        <p class="text-xs text-on-surface-variant mt-1">Active in field triage</p>
+      </div>
+
+      <div class="bg-surface rounded-2xl p-md border border-outline-variant level-2-shadow">
+        <div class="flex justify-between items-start mb-sm">
+          <h3 class="font-label-md text-label-md text-on-surface-variant font-semibold">Pending / New</h3>
+          <div class="w-8 h-8 rounded-full bg-error-container flex items-center justify-center text-on-error-container">
+            <span class="material-symbols-outlined text-[18px]">error</span>
+          </div>
+        </div>
+        <p id="stat-pending-reports" class="font-headline-lg text-2xl font-black text-on-surface">1,559</p>
+        <p class="text-xs text-error font-semibold mt-1">Awaiting inspection</p>
+      </div>
+    </div>
+
+    <!-- Main Grid Layout -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Left Column: Map & Charts -->
+      <div class="lg:col-span-2 flex flex-col gap-8">
+        <!-- Live Map Card -->
+        <div class="bg-surface rounded-2xl border border-outline-variant level-2-shadow flex flex-col overflow-hidden">
+          <div class="p-md border-b border-outline-variant bg-surface flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-error animate-ping"></span>
+              <h2 class="font-headline-md text-[20px] font-bold text-on-surface">Live Karnataka Incident Map</h2>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button onclick="filterMap('all')" data-filter="all" class="map-filter-btn px-2.5 py-1 text-xs rounded-full bg-surface-container-high text-on-surface font-medium ring-2 ring-primary">All</button>
+              <button onclick="filterMap('high')" data-filter="high" class="map-filter-btn px-2.5 py-1 text-xs rounded-full bg-error-container text-on-error-container font-semibold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-error"></span> High
+              </button>
+              <button onclick="filterMap('med')" data-filter="med" class="map-filter-btn px-2.5 py-1 text-xs rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-semibold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-on-tertiary-container"></span> Med
+              </button>
+              <button onclick="filterMap('resolved')" data-filter="resolved" class="map-filter-btn px-2.5 py-1 text-xs rounded-full bg-secondary-container text-on-secondary-container font-semibold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-secondary"></span> Resolved
+              </button>
+            </div>
+          </div>
+
+          <div id="live-leaflet-map" class="w-full h-[460px] relative z-0"></div>
+          
+          <div class="p-3 bg-surface-container-low border-t border-outline-variant text-xs text-on-surface-variant flex justify-between items-center">
+            <span>📍 Showing Mysuru & Bengaluru Civic Grid</span>
+            <span>Click any marker to inspect incident & AI vision diagnosis</span>
+          </div>
+        </div>
+
+        <!-- Issue Categories Breakdown Chart -->
+        <div class="bg-surface rounded-2xl border border-outline-variant level-2-shadow p-6">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="font-headline-md text-[20px] font-bold text-on-surface">Issue Categories Breakdown</h2>
+            <span class="text-xs text-on-surface-variant">Real-time aggregate</span>
+          </div>
+          
+          <div class="flex h-48 items-end gap-3 px-sm">
+            <div class="flex-1 flex flex-col items-center gap-sm group cursor-pointer" onclick="showToast('Filtered by Sanitation', 'Displaying sanitation issues', 'info')">
+              <div class="w-full bg-primary-container rounded-t-lg relative h-[82%] group-hover:bg-primary transition-all flex items-start justify-center pt-2">
+                <span class="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">4.2k</span>
+              </div>
+              <span class="font-label-sm text-[12px] text-on-surface font-semibold truncate w-full text-center">Sanitation</span>
+            </div>
+            
+            <div class="flex-1 flex flex-col items-center gap-sm group cursor-pointer" onclick="showToast('Filtered by Roads', 'Displaying road issues', 'info')">
+              <div class="w-full bg-surface-tint rounded-t-lg relative h-[100%] group-hover:bg-primary transition-all flex items-start justify-center pt-2">
+                <span class="text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">5.1k</span>
+              </div>
+              <span class="font-label-sm text-[12px] text-on-surface font-semibold truncate w-full text-center">Roads</span>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center gap-sm group cursor-pointer" onclick="showToast('Filtered by Water', 'Displaying pipeline issues', 'info')">
+              <div class="w-full bg-primary-fixed-dim rounded-t-lg relative h-[62%] group-hover:bg-primary transition-all flex items-start justify-center pt-2">
+                <span class="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">3.1k</span>
+              </div>
+              <span class="font-label-sm text-[12px] text-on-surface font-semibold truncate w-full text-center">Water</span>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center gap-sm group cursor-pointer" onclick="showToast('Filtered by Power', 'Displaying power issues', 'info')">
+              <div class="w-full bg-surface-variant rounded-t-lg relative h-[32%] group-hover:bg-primary transition-all flex items-start justify-center pt-2">
+                <span class="text-xs font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">1.2k</span>
+              </div>
+              <span class="font-label-sm text-[12px] text-on-surface font-semibold truncate w-full text-center">Power</span>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center gap-sm group cursor-pointer" onclick="showToast('Filtered by Transport', 'Displaying transport issues', 'info')">
+              <div class="w-full bg-surface-variant rounded-t-lg relative h-[18%] group-hover:bg-primary transition-all flex items-start justify-center pt-2">
+                <span class="text-xs font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">0.8k</span>
+              </div>
+              <span class="font-label-sm text-[12px] text-on-surface font-semibold truncate w-full text-center">Transport</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Constituency Explorer -->
+      <div id="constituency-section" class="lg:col-span-1">
+        <div class="bg-surface rounded-2xl border border-outline-variant level-2-shadow flex flex-col sticky top-24">
+          <div class="p-md border-b border-outline-variant bg-surface-container-low rounded-t-2xl">
+            <h2 class="font-headline-md text-[20px] font-bold text-on-surface flex items-center gap-xs">
+              <span class="material-symbols-outlined text-primary">explore</span>
+              Constituency Explorer
+            </h2>
+            <p class="font-body-md text-[13px] text-on-surface-variant mt-xs">Search local assembly, MLA stats & ward issues.</p>
+          </div>
+
+          <div class="p-md flex flex-col gap-md">
+            <div class="relative">
+              <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+              <input oninput="handleConstituencySearch(this.value)" class="w-full h-11 pl-10 pr-4 bg-surface border border-outline-variant rounded-xl font-body-md text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Search Mysuru, Bengaluru, Malleshwaram..." type="text" value="Mysuru"/>
+            </div>
+
+            <div class="flex flex-wrap gap-1.5">
+              <button onclick="renderConstituencyExplorer('Mysuru')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Mysuru</button>
+              <button onclick="renderConstituencyExplorer('Bengaluru South')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Bengaluru South</button>
+              <button onclick="renderConstituencyExplorer('Malleshwaram')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Malleshwaram</button>
+              <button onclick="renderConstituencyExplorer('Hubballi-Dharwad Central')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Hubballi</button>
+            </div>
+
+            <!-- MLA Profile Card -->
+            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md level-2-shadow">
+              <div class="flex items-start gap-md mb-md">
+                <div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden border-2 border-primary/20 shrink-0">
+                  <img id="mla-photo" alt="MLA Profile" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng"/>
+                </div>
+                <div>
+                  <h3 id="mla-name" class="font-headline-md text-[18px] font-bold text-on-surface">K. Govindaraj</h3>
+                  <p id="mla-desig" class="font-label-sm text-label-sm text-primary font-medium mb-1">Member of Legislative Assembly</p>
+                  <span id="mla-party" class="inline-block px-2 py-0.5 bg-surface-container-high rounded font-label-sm text-[11px] text-on-surface-variant font-semibold">Independent / Civic Alliance</span>
+                </div>
+              </div>
+
+              <button onclick="showToast('E-Office Connected', 'Opening MLA constituent grievances desk...', 'success')" class="w-full py-2 bg-surface border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-xs font-semibold">
+                <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                Contact Representative Office
+              </button>
+            </div>
+
+            <!-- Local Ward Stats -->
+            <div class="mt-sm">
+              <h4 id="const-stats-title" class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider font-bold">Mysuru Local Stats</h4>
+              <div class="space-y-2.5">
+                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="font-body-md text-[13px] text-on-surface font-medium">Total Local Issues</span>
+                  <span id="const-total-issues" class="font-label-md text-label-md font-black">1,204</span>
+                </div>
+                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
+                    <div class="w-2 h-2 rounded-full bg-error"></div> High Priority
+                  </span>
+                  <span id="const-high-issues" class="font-label-md text-label-md font-black text-error">87</span>
+                </div>
+                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                  <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
+                    <div class="w-2 h-2 rounded-full bg-secondary"></div> Resolution Rate
+                  </span>
+                  <span id="const-rate-issues" class="font-label-md text-label-md font-black text-secondary">68%</span>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <span class="text-xs font-semibold text-on-surface-variant block mb-2">Ward Level Performance</span>
+                <div id="const-ward-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-surface-container-high dark:bg-surface-container-highest border-t border-outline-variant mt-auto">
+    <div class="max-w-max-width mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div class="space-y-2 md:col-span-1">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">JS</span>
+            <span class="font-display-lg text-lg font-black text-on-surface">JanSetu AI</span>
+          </div>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Karnataka Public Civic Issues Dashboard and Ward Triage Intelligence.</p>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Platform</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="index.html" class="hover:text-primary">Home Portal</a></li>
+            <li><a href="report.html" class="hover:text-primary">Report an Issue</a></li>
+            <li><a href="dashboard.html" class="hover:text-primary">Live Issues Map</a></li>
+          </ul>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Resources</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="index.html#how-it-works" class="hover:text-primary">How It Works</a></li>
+            <li><a href="index.html#human-rights" class="hover:text-primary">Human Rights Ticker</a></li>
+            <li><a href="report.html" class="hover:text-primary">Privacy Identity Shield</a></li>
+          </ul>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Authority</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="authority.html" class="hover:text-primary font-semibold text-primary">Authority Console</a></li>
+            <li><span class="text-on-surface-variant/70">Mysuru (MCC) & BBMP</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs text-on-surface-variant">
+        <p>© 2026 JanSetu AI. Empowering Civic Accountability across Karnataka.</p>
+        <span class="font-bold text-primary">Bilingual EN / ಕನ್ನಡ</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initDashboardView();
+    });
+  </script>
+</body>
+</html>

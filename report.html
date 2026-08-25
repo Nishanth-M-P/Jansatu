@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>JanSetu AI - Report a Problem</title>
+  
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Geist:wght@400;500;600;700&family=Noto+Sans+Kannada:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/styles.css"/>
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-primary-container": "#90a8ff",
+            "surface-container-lowest": "#ffffff",
+            "background": "#f8f9fa",
+            "on-error-container": "#93000a",
+            "on-secondary-container": "#00714d",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#6ffbbe",
+            "on-error": "#ffffff",
+            "on-tertiary-container": "#ef9900",
+            "on-tertiary": "#ffffff",
+            "on-primary-fixed-variant": "#264191",
+            "surface-dim": "#d9dadb",
+            "on-primary": "#ffffff",
+            "inverse-primary": "#b6c4ff",
+            "on-primary-fixed": "#00164e",
+            "on-secondary": "#ffffff",
+            "surface-container-high": "#e7e8e9",
+            "inverse-surface": "#2e3132",
+            "secondary": "#006c49",
+            "on-secondary-fixed": "#002113",
+            "tertiary-container": "#5c3800",
+            "surface-variant": "#e1e3e4",
+            "primary": "#00236f",
+            "on-secondary-fixed-variant": "#005236",
+            "tertiary-fixed": "#ffddb8",
+            "on-surface-variant": "#444651",
+            "error": "#ba1a1a",
+            "on-surface": "#191c1d",
+            "on-tertiary-fixed-variant": "#653e00",
+            "surface-container-low": "#f3f4f5",
+            "surface-bright": "#f8f9fa",
+            "outline-variant": "#c5c5d3",
+            "tertiary-fixed-dim": "#ffb95f",
+            "surface-container-highest": "#e1e3e4",
+            "primary-fixed": "#dce1ff",
+            "outline": "#757682",
+            "surface-tint": "#4059aa",
+            "secondary-fixed-dim": "#4edea3",
+            "primary-container": "#1e3a8a",
+            "primary-fixed-dim": "#b6c4ff",
+            "on-background": "#191c1d",
+            "inverse-on-surface": "#f0f1f2",
+            "secondary-container": "#6cf8bb",
+            "tertiary": "#3e2400",
+            "surface-container": "#edeeef",
+            "on-tertiary-fixed": "#2a1700",
+            "surface": "#f8f9fa"
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+  <!-- TopNavBar -->
+  <header class="bg-surface border-b border-outline-variant shadow-sm w-full top-0 z-40 relative">
+    <div class="flex justify-between items-center w-full px-4 sm:px-6 lg:px-8 max-w-max-width mx-auto h-16">
+      <div class="flex items-center gap-md shrink-0">
+        <a href="index.html" class="font-display-lg text-[22px] font-black text-primary flex items-center gap-2 whitespace-nowrap shrink-0">
+          <span class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-sm shadow-sm">JS</span>
+          <span data-i18n="brand" class="whitespace-nowrap">JanSetu AI</span>
+        </a>
+      </div>
+      <nav class="hidden lg:flex items-center gap-4 xl:gap-6 h-full whitespace-nowrap flex-nowrap shrink-0">
+        <a class="text-primary border-b-2 border-primary font-bold pb-1 flex items-center h-full text-xs xl:text-sm px-1.5 whitespace-nowrap shrink-0" href="report.html" data-i18n="btnReport">Report a Problem</a>
+        <a class="text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-colors flex items-center h-full px-1.5 whitespace-nowrap shrink-0" href="dashboard.html" data-i18n="btnExplore">Public Issues</a>
+        <a class="text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-colors flex items-center h-full px-1.5 whitespace-nowrap shrink-0" href="dashboard.html#constituency-section" data-i18n="btnConstituency">Constituency Explorer</a>
+      </nav>
+      <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 flex-nowrap">
+        <!-- Dark Mode Toggle Button -->
+        <button onclick="toggleDarkMode()" class="theme-toggle-btn h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap" title="Toggle Dark/Light Mode">
+          <span class="theme-toggle-icon material-symbols-outlined text-[16px] text-amber-500">dark_mode</span>
+          <span class="theme-toggle-text hidden sm:inline whitespace-nowrap">Dark</span>
+        </button>
+
+        <!-- Language Switcher -->
+        <button id="lang-toggle-btn" onclick="toggleLanguage()" title="Toggle English/Kannada" class="h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap">
+          <span class="material-symbols-outlined text-[16px] text-primary">translate</span>
+          <span class="whitespace-nowrap">English/ಕನ್ನಡ</span>
+        </button>
+
+        <a href="authority.html" class="hidden md:inline-flex h-9 px-3.5 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all font-semibold text-xs items-center justify-center gap-1.5 shadow-xs bg-surface shrink-0 whitespace-nowrap">
+          <span class="material-symbols-outlined text-[16px]">shield_person</span>
+          <span data-i18n="btnAuthority" class="whitespace-nowrap">Authority Portal</span>
+        </a>
+
+        <!-- Citizen Login / Profile Button (Next to Authority Portal) -->
+        <div class="auth-user-slot shrink-0 flex items-center"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Report Main Workflow -->
+  <main class="flex-grow w-full px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto py-8 flex flex-col gap-xl">
+    <section class="flex flex-col gap-md">
+      <div>
+        <h1 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface font-black">Report a New Problem</h1>
+        <p class="font-body-md text-body-md text-on-surface-variant mt-sm">Step 1: Input & AI Vision Analysis. Provide details and let our AI categorize your issue.</p>
+      </div>
+
+      <!-- Stepper -->
+      <div class="w-full max-w-3xl mt-sm relative py-md">
+        <div class="stepper-line"></div>
+        <div id="stepper-progress-bar" class="stepper-progress" style="width: 0%;"></div>
+        
+        <div class="relative z-10 flex justify-between items-center px-sm">
+          <div onclick="setReportStep(1)" class="flex flex-col items-center gap-xs cursor-pointer">
+            <div id="step-circle-1" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-label-sm text-label-sm font-bold border-2 border-surface shadow-sm">1</div>
+            <span id="step-label-1" class="font-label-sm text-label-sm text-primary font-bold">Input & AI</span>
+          </div>
+          <div onclick="setReportStep(2)" class="flex flex-col items-center gap-xs cursor-pointer">
+            <div id="step-circle-2" class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-label-sm text-label-sm border-2 border-surface">2</div>
+            <span id="step-label-2" class="font-label-sm text-label-sm text-on-surface-variant font-medium">Location</span>
+          </div>
+          <div onclick="setReportStep(3)" class="flex flex-col items-center gap-xs cursor-pointer">
+            <div id="step-circle-3" class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-label-sm text-label-sm border-2 border-surface">3</div>
+            <span id="step-label-3" class="font-label-sm text-label-sm text-on-surface-variant font-medium">Review</span>
+          </div>
+          <div class="flex flex-col items-center gap-xs">
+            <div id="step-circle-4" class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center font-label-sm text-label-sm border-2 border-surface">4</div>
+            <span id="step-label-4" class="font-label-sm text-label-sm text-on-surface-variant font-medium">Track</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 1 PANEL -->
+    <div id="report-step-1-panel" class="grid grid-cols-1 lg:grid-cols-12 gap-xl">
+      <div class="lg:col-span-7 flex flex-col gap-lg">
+        <div class="bg-surface rounded-2xl border border-outline-variant level-2-shadow p-lg flex flex-col gap-md">
+          <div class="flex justify-between items-center">
+            <h2 class="font-headline-md text-headline-md text-on-surface font-bold">Describe the Issue</h2>
+            <span class="text-xs text-on-surface-variant font-semibold">Supports Voice & Multi-language</span>
+          </div>
+
+          <div class="flex flex-col gap-sm">
+            <label class="font-label-md text-label-md text-on-surface font-medium" for="issue-description">Description</label>
+            <textarea class="w-full rounded-xl border border-outline-variant p-md font-body-md text-body-md text-on-surface focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none resize-none bg-surface-container-lowest transition-all" id="issue-description" placeholder="E.g., There is a broken pipe leaking water..." rows="4">There is garbage everywhere near the government school.</textarea>
+          </div>
+
+          <div class="flex flex-col gap-sm mt-sm">
+            <span class="font-label-md text-label-md text-on-surface font-semibold">Add Media (Required for AI Vision Analysis)</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+              <label class="h-32 border-2 border-dashed border-primary/40 rounded-xl flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:bg-surface-container-low hover:border-primary hover:text-primary transition-all bg-surface-container-lowest cursor-pointer group">
+                <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
+                <span class="material-symbols-outlined text-3xl group-hover:scale-110 transition-transform text-primary" data-icon="add_photo_alternate">add_photo_alternate</span>
+                <span class="font-label-sm text-label-sm font-semibold">Upload Photo/Video</span>
+                <span class="text-[11px] text-outline">Drag & drop or browse</span>
+              </label>
+
+              <button id="voice-record-btn" onclick="triggerVoiceRecording()" class="h-32 border-2 border-outline-variant rounded-xl flex flex-col items-center justify-center gap-2 text-on-surface-variant hover:bg-surface-container-low transition-all bg-surface-container-lowest group relative overflow-hidden">
+                <span class="material-symbols-outlined text-3xl text-secondary group-hover:scale-110 transition-transform" data-icon="mic">mic</span>
+                <span class="voice-btn-text font-label-sm text-label-sm font-semibold">Record Voice Note</span>
+                <span class="text-[11px] text-outline">Kannada or English Speech</span>
+              </button>
+            </div>
+
+            <!-- Visualizer -->
+            <div id="voice-visualizer" class="hidden mt-2 p-3 bg-secondary/5 rounded-xl border border-secondary/20 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1 h-6">
+                  <div class="audio-bar"></div>
+                  <div class="audio-bar"></div>
+                  <div class="audio-bar"></div>
+                  <div class="audio-bar"></div>
+                  <div class="audio-bar"></div>
+                  <div class="audio-bar"></div>
+                </div>
+                <span class="text-xs font-semibold text-secondary animate-pulse">Listening... Speak clearly</span>
+              </div>
+              <span class="text-xs text-on-surface-variant">JanSetu Multilingual Speech Engine</span>
+            </div>
+
+            <!-- Demo Presets -->
+            <div class="mt-2 pt-2 border-t border-outline-variant flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-semibold text-on-surface-variant">Try Preset Issues:</span>
+              <button onclick="runAIVisionScan('garbage')" class="px-2.5 py-1 text-xs bg-surface-container-high rounded-full hover:bg-primary-fixed hover:text-primary transition-colors font-medium">🗑️ Garbage</button>
+              <button onclick="runAIVisionScan('pothole')" class="px-2.5 py-1 text-xs bg-surface-container-high rounded-full hover:bg-primary-fixed hover:text-primary transition-colors font-medium">🚧 Pothole</button>
+              <button onclick="runAIVisionScan('water')" class="px-2.5 py-1 text-xs bg-surface-container-high rounded-full hover:bg-primary-fixed hover:text-primary transition-colors font-medium">💧 Water Leak</button>
+              <button onclick="runAIVisionScan('streetlight')" class="px-2.5 py-1 text-xs bg-surface-container-high rounded-full hover:bg-primary-fixed hover:text-primary transition-colors font-medium">💡 Broken Light</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Privacy Shield -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-lg flex flex-col gap-sm level-2-shadow">
+          <div class="flex items-start gap-md">
+            <span class="material-symbols-outlined text-secondary text-2xl mt-1">shield</span>
+            <div class="flex-grow">
+              <div class="flex justify-between items-center mb-1">
+                <h3 class="font-headline-sm text-on-surface font-bold text-[18px]">Privacy & Citizen Shield</h3>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input id="report-privacy-toggle" checked="" class="sr-only peer" type="checkbox"/>
+                  <div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+              <span class="font-label-md text-label-md text-on-surface font-bold block mb-1">Protect my identity (Anonymous mode enabled)</span>
+              <p class="font-body-md text-on-surface-variant text-sm leading-relaxed">Your personal details will be hidden from public view and encrypted for official municipal triage only.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: AI Analysis Panel -->
+      <div class="lg:col-span-5 flex flex-col gap-lg">
+        <div class="bg-surface rounded-2xl level-2-shadow overflow-hidden relative border border-outline-variant flex flex-col h-full">
+          <div class="p-md bg-surface-container-low flex items-center justify-between border-b border-outline-variant">
+            <div class="flex items-center gap-sm">
+              <span class="material-symbols-outlined text-primary fill-1 text-[22px]">auto_awesome</span>
+              <h2 class="font-headline-md text-on-surface font-bold text-[18px]">AI Vision Analysis</h2>
+            </div>
+            <div id="ai-status-pill" class="px-3 py-1 bg-secondary/10 rounded-full flex items-center gap-xs border border-secondary/20">
+              <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+              <span class="font-label-sm text-label-sm text-secondary font-bold">Analysis Complete</span>
+            </div>
+          </div>
+
+          <div class="p-lg flex flex-col gap-md flex-grow bg-surface">
+            <div class="w-full h-48 rounded-xl overflow-hidden border border-outline-variant relative bg-black/5">
+              <img id="ai-preview-img" class="w-full h-full object-cover" alt="AI Scan Preview" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA"/>
+              <div id="ai-scan-laser" class="scan-laser-line hidden"></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-sm">
+              <div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[16px]">category</span> Category
+                </span>
+                <span id="ai-cat-val" class="font-label-md text-label-md text-on-surface font-bold text-base">Sanitation</span>
+              </div>
+
+              <div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[16px]">warning</span> Severity
+                </span>
+                <div id="ai-sev-val" class="flex items-center gap-xs">
+                  <span class="w-3 h-3 rounded-full bg-error"></span>
+                  <span class="font-label-md text-label-md text-error font-bold">High</span>
+                </div>
+              </div>
+
+              <div class="col-span-2 bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[16px]">troubleshoot</span> Detected Objects
+                </span>
+                <span id="ai-obj-val" class="font-body-md text-xs text-on-surface font-medium">Garbage bags, Public Road, Waste accumulation</span>
+              </div>
+
+              <div class="col-span-2 bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
+                <div class="flex justify-between items-center">
+                  <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">AI Confidence</span>
+                  <span id="ai-conf-val" class="font-label-sm text-label-sm text-primary font-black">94%</span>
+                </div>
+                <div class="w-full bg-surface-variant rounded-full h-1.5 mt-1">
+                  <div id="ai-conf-bar" class="bg-primary h-1.5 rounded-full" style="width: 94%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-sm pt-sm border-t border-outline-variant flex flex-col gap-sm">
+              <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold">AI Recommended Draft</span>
+              <div id="ai-draft-box" class="bg-surface-container-low p-md rounded-xl border border-outline-variant font-body-md text-sm text-on-surface italic relative leading-relaxed">
+                "Garbage has accumulated near the government school, creating an unhygienic environment and health hazard for students. Immediate cleanup required."
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-span-1 lg:col-span-12 mt-lg pt-lg border-t border-outline-variant flex flex-col sm:flex-row justify-end items-center gap-md">
+        <button onclick="setReportStep(2)" class="w-full sm:w-auto px-lg py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:opacity-95 transition-all text-center font-bold shadow-md flex items-center justify-center gap-sm">
+          Continue to Step 2: Location <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2 PANEL -->
+    <div id="report-step-2-panel" class="hidden flex flex-col gap-lg max-w-3xl mx-auto w-full bg-surface p-lg rounded-2xl border border-outline-variant level-2-shadow">
+      <div class="flex justify-between items-center border-b border-outline-variant pb-4">
+        <div>
+          <h2 class="font-headline-md text-[20px] font-bold text-on-surface">Step 2: Incident Location</h2>
+          <p class="text-xs text-on-surface-variant">Pinpoint the exact municipal jurisdiction for rapid field dispatch.</p>
+        </div>
+        <button onclick="showToast('GPS Detected', 'Location pinned to Vani Vilas Mohalla, Mysuru', 'success')" class="px-3 py-1.5 bg-secondary-container text-on-secondary-container rounded-lg text-xs font-bold flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px]">my_location</span> Auto-Detect GPS
+        </button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Street Address or Landmark</label>
+          <input id="report-loc-input" type="text" value="Near Govt Primary School, Vani Vilas Mohalla, Mysuru" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">District / Corporation</label>
+            <select class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none">
+              <option>Mysuru City Corporation (MCC)</option>
+              <option>Bruhat Bengaluru Mahanagara Palike (BBMP)</option>
+              <option>Hubballi-Dharwad Municipal Corp (HDMC)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Ward</label>
+            <select id="report-ward-select" class="w-full h-11 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none">
+              <option>Ward 42, Vani Vilas Mohalla</option>
+              <option>Ward 18, Dattagalli</option>
+              <option>Ward 29, Kuvempunagar</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center border-t border-outline-variant pt-4">
+        <button onclick="setReportStep(1)" class="px-6 py-2.5 rounded-xl border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container-high">
+          Back
+        </button>
+        <button onclick="setReportStep(3)" class="px-6 py-2.5 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-95 shadow-md flex items-center gap-2">
+          Continue to Step 3: Review <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 3 PANEL -->
+    <div id="report-step-3-panel" class="hidden flex flex-col gap-lg max-w-3xl mx-auto w-full bg-surface p-lg rounded-2xl border border-outline-variant level-2-shadow">
+      <div class="border-b border-outline-variant pb-4">
+        <h2 class="font-headline-md text-[20px] font-bold text-on-surface">Step 3: Review Your Report</h2>
+        <p class="text-xs text-on-surface-variant">Please confirm the AI analysis before official submission.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="sm:col-span-1">
+          <img id="rev-img" class="w-full h-36 object-cover rounded-xl border border-outline-variant" src="" alt="Evidence" />
+        </div>
+        <div class="sm:col-span-2 space-y-2.5">
+          <div class="flex items-center gap-2">
+            <span id="rev-cat" class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">Sanitation</span>
+            <span id="rev-sev" class="px-2.5 py-0.5 rounded-full bg-error/10 text-error text-xs font-bold">High</span>
+          </div>
+          <h3 id="rev-desc" class="text-sm font-semibold text-on-surface leading-snug"></h3>
+          <p id="rev-loc" class="text-xs text-on-surface-variant flex items-center gap-1"></p>
+          <div id="rev-privacy-badge" class="pt-2 text-xs font-semibold text-secondary flex items-center gap-1"></div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center border-t border-outline-variant pt-4">
+        <button onclick="setReportStep(2)" class="px-6 py-2.5 rounded-xl border border-outline-variant text-on-surface font-semibold text-sm hover:bg-surface-container-high">
+          Back
+        </button>
+        <button onclick="submitNewReport()" class="px-8 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-95 shadow-lg flex items-center gap-2">
+          <span class="material-symbols-outlined">verified</span> Confirm & Submit to Authority
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 4 PANEL -->
+    <div id="report-step-4-panel" class="hidden flex flex-col items-center text-center gap-md max-w-xl mx-auto w-full bg-surface p-xl rounded-2xl border border-outline-variant level-3-shadow">
+      <div class="w-16 h-16 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-lg">
+        <span class="material-symbols-outlined text-3xl font-bold">check_circle</span>
+      </div>
+      
+      <h2 class="font-headline-lg text-2xl font-black text-on-surface">Report Registered Successfully!</h2>
+      <p class="text-sm text-on-surface-variant max-w-md">Your issue has been categorized by AI Vision and forwarded to the field triage unit.</p>
+
+      <div class="w-full p-4 bg-surface-container-low rounded-xl border border-outline-variant my-2">
+        <span class="text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Official Tracking ID</span>
+        <span id="final-tracking-id" class="text-2xl font-black text-primary font-mono tracking-wider">#JS-2026-00422</span>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 w-full mt-2">
+        <a href="authority.html" class="flex-1 py-3 bg-primary text-white rounded-xl text-sm font-bold hover:opacity-90 flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">shield_person</span> View in Authority Portal
+        </a>
+        <a href="dashboard.html" class="flex-1 py-3 bg-surface border border-primary text-primary rounded-xl text-sm font-semibold hover:bg-surface-container-low text-center">
+          View on Live Map
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-surface-container-high dark:bg-surface-container-highest border-t border-outline-variant mt-auto">
+    <div class="max-w-max-width mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div class="space-y-2 md:col-span-1">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-lg bg-primary text-white flex items-center justify-center font-bold text-xs shadow-sm">JS</span>
+            <span class="font-display-lg text-lg font-black text-on-surface">JanSetu AI</span>
+          </div>
+          <p class="text-xs text-on-surface-variant leading-relaxed">AI-Powered Citizen Incident Reporting with Gemini Multimodal Vision & Audio Triage.</p>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Platform</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="index.html" class="hover:text-primary">Home Portal</a></li>
+            <li><a href="report.html" class="hover:text-primary font-semibold text-primary">Report an Issue</a></li>
+            <li><a href="dashboard.html" class="hover:text-primary">Live Issues Map</a></li>
+          </ul>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Resources</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="index.html#how-it-works" class="hover:text-primary">How It Works</a></li>
+            <li><a href="index.html#human-rights" class="hover:text-primary">Human Rights Ticker</a></li>
+            <li><a href="report.html" class="hover:text-primary">Privacy Identity Shield</a></li>
+          </ul>
+        </div>
+        <div class="space-y-2">
+          <h4 class="font-bold text-xs uppercase tracking-wider text-on-surface">Authority</h4>
+          <ul class="space-y-1.5 text-xs text-on-surface-variant font-medium">
+            <li><a href="authority.html" class="hover:text-primary">Authority Console</a></li>
+            <li><span class="text-on-surface-variant/70">Mysuru (MCC) & BBMP</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-4 border-t border-outline-variant flex justify-between items-center text-xs text-on-surface-variant">
+        <p>© 2026 JanSetu AI. Empowering Civic Accountability across Karnataka.</p>
+        <span class="font-bold text-primary">Bilingual EN / ಕನ್ನಡ</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      runAIVisionScan('garbage');
+    });
+  </script>
+</body>
+</html>
