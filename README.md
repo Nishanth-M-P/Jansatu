@@ -1,4 +1,4 @@
-﻿# 🏛️ JanSetu AI (ಜನಸೇತು AI)
+# 🏛️ JanSetu AI (ಜನಸೇತು AI)
 > **Your Voice. Your Rights. Your Community.**
 > *AI-Powered Civic Accountability & Rapid Municipal Incident Resolution Platform for Karnataka.*
 
@@ -32,9 +32,10 @@
 - Real-time aggregated Karnataka metrics (12,482+ reports, 62% resolution rate).
 
 ### 4. 🏛️ Constituency & MLA Explorer
-- Assembly constituency lookup (*Mysuru, Bengaluru South, Malleshwaram, Hubballi*).
-- MLA profile card, constituent grievance desk connectivity, and ward-by-ward active vs resolved breakdown.
-- Built-in search with interactive suggestions and empty-state feedback.
+- Comprehensive lookup across **all 224 Karnataka Assembly Constituencies** spanning all 31 districts (*Mysuru, Varuna, Bengaluru South, Malleshwaram, Hubballi-Dharwad, Mangaluru, Belagavi, Kalaburagi, Shivamogga, Ballari, and all others*).
+- Official **Government of Karnataka Emblem / Seal** presentation for representative offices and state-level civic cells.
+- MLA / Legislative Secretariat profile card, constituent grievance desk connectivity, and ward/hobli-by-ward active vs resolved breakdown.
+- Built-in live search with `<datalist>` autocomplete across all 224 constituencies and quick regional filters.
 
 ### 5. 🛡️ Official Municipal Authority Triage Portal
 - **Department ID Verification Gate**: Authenticates municipal commissioners and ward officers with Department ID (e.g. `123456`).

@@ -23,13 +23,14 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA",
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuAlal71ddL5Pihl7XdEe2CYPC8X8Ltd91dUFs0q8Hdi2sbhjbJRuI_3NPu2xohL-K3wn7PxuozZ4_sxCsdoXwg5gkffNuYSreBXnrndF9NBNWEkjFoINKL20UGlqeLIJMj7pAVQQbLNlM6M46iIc_rgTLTsKPlhTpGFbz-lmo2fzOGtQeIQkuVupwSrONNLi-i31WBy9fBdghObLQHr-AK_dMEvJkQOamTdmSsiIFNC00We3PxFqMNn-w"
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA"
     ],
     description: "There is garbage everywhere near the government primary school entrance causing foul smell and health risks to schoolchildren.",
-    aiSummary: "Multiple user reports indicate severe sanitation hazard near school premises. Immediate clearance recommended to prevent health risks to students.",
+    aiSummary: "Multiple user reports indicate severe sanitation hazard near school premises. Immediate clearance recommended to prevent health risks.",
     aiConfidence: 94,
     detectedObjects: ["Garbage bags", "Solid waste", "Public footpath", "School boundary wall"],
+    recommendedAuthority: "MCC Health & Sanitation Division",
+    suggestedAction: "Emergency solid waste clearance & sanitization sweep",
     assignedTo: null,
     resolutionProof: null,
     upvotes: 42
@@ -38,15 +39,15 @@ const INITIAL_ISSUES = [
     id: "JS-2026-00420",
     title: "Dangerous Pothole on Ring Road Junction",
     category: "Roads",
-    priority: "MED",
+    priority: "HIGH",
     status: "Under Review",
     location: "Ring Road Jct, Outer Ring Road",
     ward: "Ward 18, Dattagalli",
     district: "Mysuru",
     assembly: "Chamundeshwari",
     coordinates: [12.2850, 76.6200],
-    reportedAt: "2 days ago",
-    date: "2026-08-23",
+    reportedAt: "1 day ago",
+    date: "2026-08-24",
     reporter: {
       name: "Ramesh Kumar",
       phone: "+91 94481 *****",
@@ -60,6 +61,8 @@ const INITIAL_ISSUES = [
     aiSummary: "Road surface integrity failure detected on primary junction. High traffic zone skidding hazard.",
     aiConfidence: 91,
     detectedObjects: ["Asphalt fissure", "Pothole cavity", "Traffic lane"],
+    recommendedAuthority: "PWD Road Maintenance Division",
+    suggestedAction: "Cold-mix asphalt patch resurfacing and warning cones",
     assignedTo: "PWD Road Maintenance Crew 4",
     resolutionProof: null,
     upvotes: 89
@@ -90,6 +93,8 @@ const INITIAL_ISSUES = [
     aiSummary: "Pressurized potable water distribution conduit breach. Repaired and pressure verified.",
     aiConfidence: 96,
     detectedObjects: ["Water pipe joint", "Water leakage", "Excavation area"],
+    recommendedAuthority: "Mysuru Urban Water Supply Dept",
+    suggestedAction: "Replace ruptured elbow joint with reinforced coupling",
     assignedTo: "Mysuru Urban Water Supply Dept",
     resolutionProof: "Repaired with reinforced sleeve joint on Aug 20.",
     upvotes: 112
@@ -120,6 +125,8 @@ const INITIAL_ISSUES = [
     aiSummary: "Severe electrical hazard. Uninsulated conductor exposed in public pedestrian right-of-way.",
     aiConfidence: 95,
     detectedObjects: ["Electric cable", "Transformer panel", "Pedestrian walkway"],
+    recommendedAuthority: "CHESCOM Rapid Response Unit",
+    suggestedAction: "Isolate power line, re-insulate cable, lock junction cabinet",
     assignedTo: "CHESCOM Rapid Response Unit 2",
     resolutionProof: null,
     upvotes: 67
@@ -150,6 +157,8 @@ const INITIAL_ISSUES = [
     aiSummary: "Sanitation restoration complete. 120kg waste cleared and twin smart dustbins placed.",
     aiConfidence: 97,
     detectedObjects: ["Park pathway", "Greenery", "Municipal dustbins"],
+    recommendedAuthority: "MCC Parks & Recreation Wing",
+    suggestedAction: "Install segregated twin waste bins and schedule daily collection",
     assignedTo: "MCC Health & Sanitation Division",
     resolutionProof: "Cleaned and sanitized with regular monitoring schedule set.",
     upvotes: 145
@@ -180,21 +189,139 @@ const INITIAL_ISSUES = [
     aiSummary: "Structural collapse of stormwater drain cover on high-density pedestrian thoroughfare.",
     aiConfidence: 93,
     detectedObjects: ["Open manhole", "Collapsed concrete slab", "Road surface"],
+    recommendedAuthority: "MCC Civil Engineering Cell",
+    suggestedAction: "Deploy heavy cast iron slab cover and seal edges",
     assignedTo: "MCC Civil Engineering Cell",
     resolutionProof: null,
     upvotes: 104
+  },
+  {
+    id: "JS-2026-00415",
+    title: "Severe Stormwater Drain Overflow & Road Flooding",
+    category: "Water",
+    priority: "HIGH",
+    status: "Under Review",
+    location: "16th Main Road, BTM 2nd Stage",
+    ward: "Ward 176, BTM Layout",
+    district: "Bengaluru Urban",
+    assembly: "Bengaluru South",
+    coordinates: [12.9165, 77.6101],
+    reportedAt: "3 hours ago",
+    date: "2026-08-25",
+    reporter: {
+      name: "Suresh Gowda",
+      phone: "+91 98801 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuCnEAFQGmk_abQC1cGNifekTHo2_lr6u6soz4ofOsYl2FN_F5np9L3P4dFly8SldOGEV2OPf8oYFVEW-uqOnj7FLKLbOHB2d1TB0LsJ74FWkcYQFKhx7JCb2bt9TVaZUPCMIE31FFoLPbxdyKNh0AaHnDvvlSZraS07FG3Grap9IsSpabjvt7HLfhn_jBvTTFBBgvXFAMhQgU0m6UEyt6hv0eredW-hgtymwQHjMyEpwtTkAg45mNdFVw"
+    ],
+    description: "Clogged stormwater drain causing 1.5 ft waterlogging on busy junction near BTM lake.",
+    aiSummary: "Urban stormwater conduit blockage causing localized flash flooding on arterial link.",
+    aiConfidence: 95,
+    detectedObjects: ["Flooded street", "Stormwater grate", "Trapped vehicles"],
+    recommendedAuthority: "BBMP Stormwater Drain (SWD) Dept",
+    suggestedAction: "Deploy suction desilting machine and clear culvert blockage",
+    assignedTo: "BBMP South Quick Response Team",
+    resolutionProof: null,
+    upvotes: 78
+  },
+  {
+    id: "JS-2026-00414",
+    title: "Broken Streetlight Array Plunging Commercial Lane in Darkness",
+    category: "Electricity",
+    priority: "MED",
+    status: "Assigned",
+    location: "8th Cross, Sampige Road",
+    ward: "Ward 45, Malleshwaram",
+    district: "Bengaluru Urban",
+    assembly: "Malleshwaram",
+    coordinates: [12.9982, 77.5714],
+    reportedAt: "1 day ago",
+    date: "2026-08-24",
+    reporter: {
+      name: "Meenakshi R.",
+      phone: "+91 94490 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNglpP62q-wJ2o-Wwdr6kr8VL42wdkIZZ9RZcKwZVTV3CLxj50L8zOAf5Mf2auFc2gnnkZ-B8ig4mhCbjlohbUPwkPn3r53YV0VCwMRrIsRzEixEFgU8mAqpdka0TdpcNEeq7wNF1uhx91GL3a1wZD8Fbi6OAOZXxRk5-CpJwCP5yA5ju0XZmEXWoqqryAPsxTr9ywhGscJjeNnuDzDrItfeuezyuyqvhJEwf2zIa0nrqrXBp8_IIXiA"
+    ],
+    description: "4 streetlights in sequence have been dead for 3 nights, causing pedestrian safety issues.",
+    aiSummary: "Multiple sequential LED fixture circuit failure along commercial pedestrian corridor.",
+    aiConfidence: 92,
+    detectedObjects: ["Streetlight pole", "Unlit fixture", "Market pathway"],
+    recommendedAuthority: "BESCOM West Circle / BBMP Electrical",
+    suggestedAction: "Replace faulty feeder relay and blown LED drivers",
+    assignedTo: "BESCOM Malleshwaram Maintenance Squad",
+    resolutionProof: null,
+    upvotes: 56
+  },
+  {
+    id: "JS-2026-00413",
+    title: "Dangerous Crater on Lamington Road Commercial Hub",
+    category: "Roads",
+    priority: "HIGH",
+    status: "Under Review",
+    location: "Opposite Town Hall, Lamington Road",
+    ward: "Ward 22, Vidyanagar",
+    district: "Dharwad",
+    assembly: "Hubballi-Dharwad Central",
+    coordinates: [15.3647, 75.1240],
+    reportedAt: "6 hours ago",
+    date: "2026-08-25",
+    reporter: {
+      name: "Basavaraj P.",
+      phone: "+91 97400 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://lh3.googleusercontent.com/aida-public/AB6AXuC9H8D4s0giwvwvOQ-CFhLb0RjI06xOuY2axYf3RIOL6SJwQ1pgNkHNOWVlUKNWDeqhh4YTOtTfDmQxgnPltqkH3Lqw065GkT9QefLyO7XL4JwI65cDm8hK0Jj-ZSGb87ovCU7QQgW9-vKKXnU6pL_gk6ninIoodRiVk_PmWB60ta-15vB27kQi4Y8ddjhXGUfD2hek_V07963-gt4p4ettaVUdjDTrSnAFtG3fkar3Z_htJD1CBrtRiA"
+    ],
+    description: "Huge asphalt crater causing buses and autos to swerve dangerously near the market signal.",
+    aiSummary: "Sub-base asphalt degradation forming severe traffic safety obstruction on bus route.",
+    aiConfidence: 94,
+    detectedObjects: ["Deep asphalt crater", "Bus lane", "Road crack"],
+    recommendedAuthority: "HDMC Engineering Division",
+    suggestedAction: "Execute rapid cold-asphalt compaction and seal surface",
+    assignedTo: null,
+    resolutionProof: null,
+    upvotes: 91
   }
 ];
+
+const KARNATAKA_STATE_LEADER = {
+  name: "State of Karnataka (All Constituencies)",
+  district: "Government of Karnataka",
+  mlaName: "Chief Minister & Municipal Administration Cell",
+  designation: "Head of Karnataka State Administration & Urban Development",
+  party: "Government of Karnataka • State Civic Cell",
+  photo: "assets/karnataka_govt_logo.svg",
+  email: "cm.civiccell@karnataka.gov.in",
+  officeLocation: "Vidhana Soudha, Dr. B.R. Ambedkar Veedhi, Bengaluru",
+  totalIssues: 12482,
+  highPriority: 458,
+  resolvedRate: "62%",
+  wards: [
+    { name: "Mysuru Division (MCC)", active: 128, resolved: 410 },
+    { name: "Bengaluru Urban (BBMP)", active: 312, resolved: 890 },
+    { name: "Hubballi-Dharwad (HDMC)", active: 84, resolved: 260 },
+    { name: "Belagavi & Mangaluru Corp", active: 65, resolved: 195 }
+  ]
+};
 
 const CONSTITUENCIES_DATA = {
   "Mysuru": {
     name: "Mysuru (Chamaraja / Chamundeshwari)",
-    district: "Mysuru District",
-    mlaName: "K. Govindaraj",
+    district: "Mysuru",
+    mlaName: "K. Harish Gowda / G. T. Devegowda",
     designation: "Member of Legislative Assembly",
-    party: "Independent / Civic Alliance",
-    photo: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng",
-    email: "office.govindaraj@karnataka.gov.in",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "office.mysuru@karnataka.gov.in",
     officeLocation: "Mini Vidhana Soudha, Nazarbad, Mysuru",
     totalIssues: 1204,
     highPriority: 87,
@@ -206,22 +333,77 @@ const CONSTITUENCIES_DATA = {
       { name: "Ward 12 - Gokulam", active: 6, resolved: 54 }
     ]
   },
+  "Chamaraja": {
+    name: "Chamaraja, Mysuru",
+    district: "Mysuru",
+    mlaName: "K. Harish Gowda",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.chamaraja@karnataka.gov.in",
+    officeLocation: "MCC Zonal Office 6, Chamaraja, Mysuru",
+    totalIssues: 542,
+    highPriority: 36,
+    resolvedRate: "74%",
+    wards: [
+      { name: "Ward 42 - Vani Vilas Mohalla", active: 8, resolved: 38 },
+      { name: "Ward 12 - Gokulam 3rd Stage", active: 5, resolved: 42 },
+      { name: "Ward 35 - Shivarampet / Urs Road", active: 7, resolved: 29 }
+    ]
+  },
+  "Chamundeshwari": {
+    name: "Chamundeshwari, Mysuru",
+    district: "Mysuru",
+    mlaName: "G. T. Devegowda",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.chamundeshwari@karnataka.gov.in",
+    officeLocation: "Mini Vidhana Soudha, Nazarbad, Mysuru",
+    totalIssues: 418,
+    highPriority: 29,
+    resolvedRate: "71%",
+    wards: [
+      { name: "Ward 18 - Dattagalli Ring Road", active: 6, resolved: 24 },
+      { name: "Bogadi Ward Unit", active: 4, resolved: 18 },
+      { name: "Hootagalli Industrial Hobli", active: 8, resolved: 30 }
+    ]
+  },
+  "Varuna": {
+    name: "Varuna, Mysuru",
+    district: "Mysuru",
+    mlaName: "Siddaramaiah",
+    designation: "Chief Minister of Karnataka & MLA",
+    party: "Government of Karnataka",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.varuna@karnataka.gov.in",
+    officeLocation: "Varuna Taluk Administrative Office, Mysuru",
+    totalIssues: 680,
+    highPriority: 42,
+    resolvedRate: "81%",
+    wards: [
+      { name: "Varuna Hobli Centre", active: 6, resolved: 45 },
+      { name: "Bannur Town Division", active: 9, resolved: 38 },
+      { name: "Kempisiddanahundi Ward", active: 3, resolved: 28 }
+    ]
+  },
   "Bengaluru South": {
-    name: "Bengaluru South (Jayanagar / BTM)",
+    name: "Bengaluru South (Jayanagar / BTM / Padmanabanagar)",
     district: "Bengaluru Urban",
-    mlaName: "Ramalinga Reddy",
-    designation: "Minister for Transport & MLA",
-    party: "INC",
-    photo: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng",
-    email: "mla.btm@bbmp.gov.in",
-    officeLocation: "BBMP Ward Office, 4th Block Jayanagar",
+    mlaName: "Ramalinga Reddy / M. Krishnappa",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.south@bbmp.gov.in",
+    officeLocation: "BBMP South Zonal Office, 9th Main Jayanagar, Bengaluru",
     totalIssues: 3410,
     highPriority: 215,
     resolvedRate: "72%",
     wards: [
       { name: "Ward 177 - JP Nagar", active: 22, resolved: 98 },
       { name: "Ward 176 - BTM Layout", active: 31, resolved: 142 },
-      { name: "Ward 168 - Pattabhirama Nagar", active: 12, resolved: 87 }
+      { name: "Ward 168 - Pattabhirama Nagar", active: 12, resolved: 87 },
+      { name: "Ward 182 - Padmanabanagar", active: 15, resolved: 65 }
     ]
   },
   "Malleshwaram": {
@@ -229,10 +411,10 @@ const CONSTITUENCIES_DATA = {
     district: "Bengaluru Urban",
     mlaName: "Dr. C. N. Ashwath Narayan",
     designation: "Member of Legislative Assembly",
-    party: "BJP",
-    photo: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
     email: "dr.ashwath@karnataka.gov.in",
-    officeLocation: "8th Cross, Sampige Road, Malleshwaram",
+    officeLocation: "8th Cross, Sampige Road, Malleshwaram, Bengaluru",
     totalIssues: 1890,
     highPriority: 94,
     resolvedRate: "79%",
@@ -247,16 +429,143 @@ const CONSTITUENCIES_DATA = {
     district: "Dharwad",
     mlaName: "Mahesh Tenginkai",
     designation: "Member of Legislative Assembly",
-    party: "BJP",
-    photo: "https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
     email: "hdmc.central@karnataka.gov.in",
-    officeLocation: "HDMC Main Building, Hubballi",
+    officeLocation: "HDMC Main Building, Lamington Road, Hubballi",
     totalIssues: 940,
     highPriority: 62,
     resolvedRate: "61%",
     wards: [
       { name: "Ward 22 - Vidyanagar", active: 12, resolved: 41 },
-      { name: "Ward 38 - Old Hubli", active: 18, resolved: 35 }
+      { name: "Ward 38 - Old Hubli", active: 18, resolved: 35 },
+      { name: "Ward 15 - Keshwapur", active: 9, resolved: 28 }
+    ]
+  },
+  "Mangaluru City South": {
+    name: "Mangaluru City South",
+    district: "Dakshina Kannada",
+    mlaName: "D. Vedavyas Kamath",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.mangalurusouth@karnataka.gov.in",
+    officeLocation: "Mangaluru City Corporation Building, Lalbagh, Mangaluru",
+    totalIssues: 820,
+    highPriority: 48,
+    resolvedRate: "76%",
+    wards: [
+      { name: "Ward 38 - Kadri South", active: 8, resolved: 52 },
+      { name: "Ward 42 - Balmatta", active: 6, resolved: 44 },
+      { name: "Ward 49 - Bunder", active: 11, resolved: 39 }
+    ]
+  },
+  "Belagavi Uttar": {
+    name: "Belagavi Uttar (North)",
+    district: "Belagavi",
+    mlaName: "Asif (Raju) Sait",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.belagavinorth@karnataka.gov.in",
+    officeLocation: "City Corporation Office, Subhash Nagar, Belagavi",
+    totalIssues: 1120,
+    highPriority: 78,
+    resolvedRate: "66%",
+    wards: [
+      { name: "Ward 12 - Tilakwadi", active: 14, resolved: 42 },
+      { name: "Ward 25 - Camp Area", active: 9, resolved: 38 },
+      { name: "Ward 31 - Shahapur", active: 16, resolved: 30 }
+    ]
+  },
+  "Kalaburagi Dakshin": {
+    name: "Kalaburagi Dakshin (South)",
+    district: "Kalaburagi",
+    mlaName: "Allamprabhu Patil",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.kalaburagisouth@karnataka.gov.in",
+    officeLocation: "Mini Vidhana Soudha, Main Road, Kalaburagi",
+    totalIssues: 980,
+    highPriority: 72,
+    resolvedRate: "63%",
+    wards: [
+      { name: "Ward 18 - Station Road", active: 15, resolved: 37 },
+      { name: "Ward 24 - Brahampur", active: 12, resolved: 41 },
+      { name: "Ward 32 - Sedam Road", active: 10, resolved: 33 }
+    ]
+  },
+  "Shivamogga": {
+    name: "Shivamogga (Urban)",
+    district: "Shivamogga",
+    mlaName: "S. N. Channabasappa",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.shivamogga@karnataka.gov.in",
+    officeLocation: "City Municipal Council Office, Balaraj Urs Road, Shivamogga",
+    totalIssues: 760,
+    highPriority: 49,
+    resolvedRate: "70%",
+    wards: [
+      { name: "Ward 10 - Gandhi Bazaar", active: 9, resolved: 35 },
+      { name: "Ward 19 - Vinoba Nagara", active: 7, resolved: 48 },
+      { name: "Ward 27 - Sharavathi Nagar", active: 5, resolved: 31 }
+    ]
+  },
+  "Ballari City": {
+    name: "Ballari City",
+    district: "Ballari",
+    mlaName: "Nara Bharath Reddy",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.ballaricity@karnataka.gov.in",
+    officeLocation: "Ballari City Corporation Office, Cantonment, Ballari",
+    totalIssues: 890,
+    highPriority: 64,
+    resolvedRate: "65%",
+    wards: [
+      { name: "Ward 14 - Brucepet", active: 13, resolved: 34 },
+      { name: "Ward 22 - Cowl Bazaar", active: 16, resolved: 29 },
+      { name: "Ward 30 - Gandhi Nagar", active: 8, resolved: 41 }
+    ]
+  },
+  "Tumkur City": {
+    name: "Tumkur City",
+    district: "Tumakuru",
+    mlaName: "G. B. Jyothi Ganesh",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.tumkurcity@karnataka.gov.in",
+    officeLocation: "City Corporation Office, Town Hall Circle, Tumakuru",
+    totalIssues: 790,
+    highPriority: 51,
+    resolvedRate: "69%",
+    wards: [
+      { name: "Ward 08 - SIT Extension", active: 6, resolved: 40 },
+      { name: "Ward 17 - Ashok Nagar", active: 11, resolved: 36 },
+      { name: "Ward 25 - Mandipet", active: 10, resolved: 29 }
+    ]
+  },
+  "Udupi": {
+    name: "Udupi",
+    district: "Udupi",
+    mlaName: "Yashpal A. Suvarna",
+    designation: "Member of Legislative Assembly",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: "mla.udupi@karnataka.gov.in",
+    officeLocation: "City Municipal Council, KM Marg, Udupi",
+    totalIssues: 610,
+    highPriority: 32,
+    resolvedRate: "83%",
+    wards: [
+      { name: "Ward 06 - Manipal", active: 5, resolved: 49 },
+      { name: "Ward 14 - Brahmagiri", active: 4, resolved: 38 },
+      { name: "Ward 21 - Malpe Coastal", active: 8, resolved: 35 }
     ]
   }
 };
@@ -268,6 +577,9 @@ const PRESET_ANALYSES = {
     severityClass: "text-error bg-error/10 border-error/20",
     confidence: 94,
     objects: "Garbage bags, Solid waste, Public Road, Waste accumulation",
+    recommendedAuthority: "MCC Health & Sanitation Division",
+    suggestedAction: "Emergency solid waste clearance & sanitization sweep",
+    location: "Near Govt Primary School, Vani Vilas Mohalla, Mysuru",
     draft: "Garbage has accumulated near the government school, creating an unhygienic environment and health hazard for students. Immediate cleanup required.",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA"
   },
@@ -277,6 +589,9 @@ const PRESET_ANALYSES = {
     severityClass: "text-error bg-error/10 border-error/20",
     confidence: 96,
     objects: "Severe road crater, Asphalt breakdown, Traffic lane obstruction",
+    recommendedAuthority: "PWD Road Maintenance Division",
+    suggestedAction: "Cold-mix asphalt patch resurfacing and warning cones",
+    location: "Ring Road Junction, Outer Ring Road, Mysuru",
     draft: "Deep pothole located on high-speed road corridor posing immediate risk to two-wheelers and pedestrians. Urgent resurfacing needed.",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuC9H8D4s0giwvwvOQ-CFhLb0RjI06xOuY2axYf3RIOL6SJwQ1pgNkHNOWVlUKNWDeqhh4YTOtTfDmQxgnPltqkH3Lqw065GkT9QefLyO7XL4JwI65cDm8hK0Jj-ZSGb87ovCU7QQgW9-vKKXnU6pL_gk6ninIoodRiVk_PmWB60ta-15vB27kQi4Y8ddjhXGUfD2hek_V07963-gt4p4ettaVUdjDTrSnAFtG3fkar3Z_htJD1CBrtRiA"
   },
@@ -286,6 +601,9 @@ const PRESET_ANALYSES = {
     severityClass: "text-[#d97706] bg-[#d97706]/10 border-[#d97706]/20",
     confidence: 93,
     objects: "Water conduit leak, Flooded sidewalk, Potable water waste",
+    recommendedAuthority: "Mysuru Urban Water Supply Dept",
+    suggestedAction: "Replace ruptured elbow joint with reinforced coupling",
+    location: "8th Cross, Kuvempu Nagar, Mysuru",
     draft: "Municipal drinking water pipe leak causing continuous water loss and localized waterlogging on the pedestrian walkway.",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuCnEAFQGmk_abQC1cGNifekTHo2_lr6u6soz4ofOsYl2FN_F5np9L3P4dFly8SldOGEV2OPf8oYFVEW-uqOnj7FLKLbOHB2d1TB0LsJ74FWkcYQFKhx7JCb2bt9TVaZUPCMIE31FFoLPbxdyKNh0AaHnDvvlSZraS07FG3Grap9IsSpabjvt7HLfhn_jBvTTFBBgvXFAMhQgU0m6UEyt6hv0eredW-hgtymwQHjMyEpwtTkAg45mNdFVw"
   },
@@ -295,6 +613,9 @@ const PRESET_ANALYSES = {
     severityClass: "text-[#d97706] bg-[#d97706]/10 border-[#d97706]/20",
     confidence: 89,
     objects: "Streetlight fixture non-functional, Dark zone, Public safety risk",
+    recommendedAuthority: "CHESCOM / BESCOM Electrical Unit",
+    suggestedAction: "Replace faulty feeder relay and blown LED drivers",
+    location: "8th Cross, Sampige Road, Malleshwaram",
     draft: "Public streetlights in this residential lane have been non-operational for 3 consecutive nights, causing security and pedestrian safety issues.",
     image: "https://lh3.googleusercontent.com/aida-public/AB6AXuDNglpP62q-wJ2o-Wwdr6kr8VL42wdkIZZ9RZcKwZVTV3CLxj50L8zOAf5Mf2auFc2gnnkZ-B8ig4mhCbjlohbUPwkPn3r53YV0VCwMRrIsRzEixEFgU8mAqpdka0TdpcNEeq7wNF1uhx91GL3a1wZD8Fbi6OAOZXxRk5-CpJwCP5yA5ju0XZmEXWoqqryAPsxTr9ywhGscJjeNnuDzDrItfeuezyuyqvhJEwf2zIa0nrqrXBp8_IIXiA"
   }
@@ -303,32 +624,109 @@ const PRESET_ANALYSES = {
 const I18N = {
   en: {
     brand: "JanSetu AI",
+    heroBadge: "AI-Powered Civic Accountability Platform",
     heroTitle: "Your Voice. Your Rights. Your Community.",
-    heroSub: "See a public problem? Report it using text, voice or a photograph. JanSetu AI connects citizens directly with authorities to ensure rapid resolution.",
+    heroSub: "Report civic problems using text, voice, or photographs. JanSetu AI connects citizens with authorities to support faster and more transparent resolution.",
     btnReport: "Report a Problem",
-    btnExplore: "Public Issues",
+    btnExplore: "Explore Public Issues",
     btnConstituency: "Constituency Explorer",
     btnAuthority: "Authority Portal",
     btnCitizenLogin: "Citizen Login",
-    howItWorks: "How It Works",
-    howItWorksSub: "A seamless process from reporting to resolution, powered by AI.",
+    howItWorks: "How JanSetu AI Works",
+    howItWorksSub: "A transparent 4-stage process from citizen report to verified field resolution, powered by Multimodal AI.",
+    step1: "1. Report",
+    step1Desc: "Citizen reports a civic issue using text, voice notes, or simply snapping a photo of the problem.",
+    step2: "2. AI Analysis",
+    step2Desc: "JanSetu AI automatically categorizes the issue, scores hazard severity, and detects key objects.",
+    step3: "3. Authority Action",
+    step3Desc: "The issue reaches the appropriate municipal corporation and ward officer with geo-jurisdiction.",
+    step4: "4. Track Resolution",
+    step4Desc: "Citizens track progress in real-time until the issue is officially resolved with photo verification.",
     successStories: "Recent Success Stories",
     successStoriesSub: "Real impact in your community.",
     resolved: "Resolved",
     totalReports: "Total Reports",
     underReview: "Under Review",
-    pending: "Pending",
-    step1: "1. Capture",
-    step1Desc: "Report issues instantly using text, voice notes, or simply snapping a photo.",
-    step2: "2. AI Analysis",
-    step2Desc: "Our system automatically categorizes the issue and assigns priority.",
-    step3: "3. Action",
-    step3Desc: "The relevant department is immediately notified with exact location data.",
-    step4: "4. Resolution",
-    step4Desc: "Track progress in real-time until the issue is officially resolved."
+    pending: "Pending / New",
+    karnatakaGrid: "Karnataka State Civic Grid",
+    dashTitle: "Karnataka Civic Issues Dashboard",
+    dashSub: "All citizen identity information is protected by JanSetu Shield. Displaying verified aggregated civic data.",
+    liveIncidentMap: "Live Karnataka Incident Map",
+    constituencyExplorer: "Constituency Explorer",
+    constituencySub: "Search local assembly, MLA stats & ward issues.",
+    categoriesBreakdown: "Issue Categories Breakdown",
+    recentPublicIssues: "Recent & Priority Public Issues",
+    publicIssuesSub: "Real-time citizen reports and verified field triage across Karnataka wards.",
+    filterAll: "All",
+    filterHigh: "High Priority",
+    filterMed: "Medium",
+    filterLow: "Low",
+    filterResolved: "Resolved",
+    searchPlaceholder: "Search 224 constituencies (e.g. Mysuru, Bengaluru South, Malleshwaram)...",
+    searchIssuesPlaceholder: "Search public issues by title, category, ward, district...",
+    viewDetails: "View Details & AI Diagnosis",
+    aiAnalysis: "AI Vision Analysis",
+    statusReported: "Reported",
+    statusUnderReview: "Under Review",
+    statusAssigned: "Assigned",
+    statusInProgress: "In Progress",
+    statusResolved: "Resolved",
+    contactAuthority: "Contact Representative Office",
+    totalLocalIssues: "Total Local Issues",
+    resolutionRate: "Resolution Rate",
+    divisionPerformance: "Division & Ward Level Performance",
+    privacyShieldTitle: "Privacy & Citizen Shield",
+    privacyShieldDesc: "Protect my identity (Anonymous mode enabled). Personal details will be encrypted and hidden from public view.",
+    authorityConsoleTitle: "Municipal Field Operations Control",
+    authorityConsoleSub: "Real-time civic dispatch, team assignment & verification console.",
+    officerBadge: "Officer ID: #123456",
+    lockConsole: "Lock Console",
+    aiHelpTitle: "How JanSetu AI Helps",
+    aiHelpSub: "From citizen report to accountable resolution.",
+    aiDemoBadge: "AI CIVIC ANALYSIS DEMO",
+    aiDemoTitle: "Automated Triage & Jurisdiction Routing",
+    aiDemoSub: "Demonstrating how JanSetu AI parses citizen reports and assigns action immediately.",
+    aiDemoReportLabel: "Citizen Report",
+    aiDemoReportText: '"Large pothole reported near Main Road"',
+    aiDemoCategory: "Road Damage",
+    aiDemoPriority: "High",
+    aiDemoLocation: "Mysuru",
+    aiDemoAuthority: "Municipal Corporation",
+    aiDemoCategoryLabel: "Category",
+    aiDemoPriorityLabel: "Priority",
+    aiDemoLocationLabel: "Location",
+    aiDemoAuthorityLabel: "Recommended Authority",
+    illustrativeMetrics: "Illustrative platform metrics",
+    howItWorksPipeline: "Civic Accountability Pipeline",
+    stage1Title: "1. Understand",
+    stage1Desc: "Parses citizen voice notes and text in both Kannada and English with speech recognition.",
+    stage2Title: "2. Categorize",
+    stage2Desc: "Identifies issue types (Roads, Sanitation, Water) directly from uploaded photographs.",
+    stage3Title: "3. Prioritize",
+    stage3Desc: "Calculates hazard severity (High / Med / Low) to flag life-safety and urgent road hazards.",
+    stage4Title: "4. Route",
+    stage4Desc: "Pins geo-coordinates and routes incidents directly to the correct Karnataka Corporation ward.",
+    stage5Title: "5. Track",
+    stage5Desc: "Provides unique tracking IDs and real-time status updates from triage to verified completion.",
+    footerDesc: "AI-powered civic accountability platform connecting Karnataka citizens directly with municipal authorities for rapid incident resolution.",
+    footerCitizenPlatform: "Citizen Platform",
+    footerAiRights: "AI & Civic Rights",
+    footerAuthorityPortal: "Authority Portal",
+    footerGovTag: "Government of Karnataka Civic Tech",
+    statusFlowReported: "Reported",
+    statusFlowAssigned: "Assigned",
+    statusFlowProgress: "In Progress",
+    statusFlowResolved: "Resolved",
+    close: "Close",
+    upvote: "Upvote",
+    upvotes: "Upvotes",
+    guestMode: "Use as Guest",
+    signIn: "Sign In",
+    register: "Register"
   },
   kn: {
     brand: "ಜನಸೇತು AI",
+    heroBadge: "AI ಚಾಲಿತ ಸಾರ್ವಜನಿಕ ಹೊಣೆಗಾರಿಕೆ ವೇದಿಕೆ",
     heroTitle: "ನಿಮ್ಮ ಧ್ವನಿ. ನಿಮ್ಮ ಹಕ್ಕು. ನಿಮ್ಮ ಸಮುದಾಯ.",
     heroSub: "ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳನ್ನು ನೋಡಿದ್ದೀರಾ? ಪಠ್ಯ, ಧ್ವನಿ ಅಥವಾ ಫೋಟೋ ಬಳಸಿ ಸುಲಭವಾಗಿ ದೂರು ನೀಡಿ. ತ್ವರಿತ ಪರಿಹಾರಕ್ಕಾಗಿ ನಾಗರಿಕರನ್ನು ನೇರವಾಗಿ ಪ್ರಾಧಿಕಾರಗಳೊಂದಿಗೆ ಜನಸೇತು ಸಂಪರ್ಕಿಸುತ್ತದೆ.",
     btnReport: "ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ",
@@ -336,114 +734,147 @@ const I18N = {
     btnConstituency: "ಕ್ಷೇತ್ರ ಮಾಹಿತಿ",
     btnAuthority: "ಪ್ರಾಧಿಕಾರ ಪೋರ್ಟಲ್",
     btnCitizenLogin: "ನಾಗರಿಕ ಲಾಗಿನ್",
-    howItWorks: "ಇದು ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ",
-    howItWorksSub: "AI ಚಾಲಿತ ತ್ವರಿತ ಪರಿಹಾರ ಪ್ರಕ್ರಿಯೆ.",
+    howItWorks: "ಜನಸೇತು AI ಹೇಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ",
+    howItWorksSub: "ನಾಗರಿಕ ವರದಿಯಿಂದ ಪರಿಶೀಲಿಸಿದ ಪರಿಹಾರದವರೆಗೆ AI ಚಾಲಿತ ೪ ಹಂತಗಳ ಪಾರದರ್ಶಕ ಪ್ರಕ್ರಿಯೆ.",
+    step1: "೧. ವರದಿ ಮಾಡಿ",
+    step1Desc: "ಪಠ್ಯ, ಧ್ವನಿ ಸಂದೇಶ ಅಥವಾ ಫೋಟೋ ತೆಗೆಯುವ ಮೂಲಕ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಯನ್ನು ತಕ್ಷಣವೇ ವರದಿ ಮಾಡಿ.",
+    step2: "೨. AI ವಿಶ್ಲೇಷಣೆ",
+    step2Desc: "ಜನಸೇತು AI ಸಮಸ್ಯೆಯ ವರ್ಗ, ತೀವ್ರತೆ ಮತ್ತು ಪ್ರಮುಖ ಅಂಶಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ವಿಶ್ಲೇಷಿಸುತ್ತದೆ.",
+    step3: "೩. ಪ್ರಾಧಿಕಾರದ ಕ್ರಮ",
+    step3Desc: "ಸಂಬಂಧಿತ ಮಹಾನಗರ ಪಾಲಿಕೆ ಮತ್ತು ವಾರ್ಡ್ ಇಂಜಿನಿಯರ್‌ಗೆ ನಿಖರ ಸ್ಥಳದೊಂದಿಗೆ ಮಾಹಿತಿ ತಕ್ಷಣವೇ ತಲುಪುತ್ತದೆ.",
+    step4: "೪. ಪರಿಹಾರದ ಟ್ರ್ಯಾಕಿಂಗ್",
+    step4Desc: "ಸಮಸ್ಯೆ ಅಧಿಕೃತವಾಗಿ ಪೂರ್ಣ ಪರಿಹಾರವಾಗುವವರೆಗೆ ನೈಜ ಸಮಯದಲ್ಲಿ ಪ್ರಗತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ.",
     successStories: "ಇತ್ತೀಚಿನ ಯಶಸ್ವಿ ಪರಿಹಾರಗಳು",
     successStoriesSub: "ನಿಮ್ಮ ಸಮುದಾಯದಲ್ಲಿ ನೈಜ ಪ್ರಭಾವ.",
     resolved: "ಪರಿಹರಿಸಲಾಗಿದೆ",
     totalReports: "ಒಟ್ಟು ವರದಿಗಳು",
     underReview: "ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ",
-    pending: "ಬಾಕಿ ಇದೆ",
-    step1: "೧. ಸೆರೆಹಿಡಿಯಿರಿ",
-    step1Desc: "ಪಠ್ಯ, ಧ್ವನಿ ಅಥವಾ ಫೋಟೋ ಮೂಲಕ ತಕ್ಷಣವೇ ವರದಿ ಮಾಡಿ.",
-    step2: "೨. AI ವಿಶ್ಲೇಷಣೆ",
-    step2Desc: "ನಮ್ಮ AI ವ್ಯವಸ್ಥೆಯು ವರ್ಗ ಮತ್ತು ಆದ್ಯತೆಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನಿರ್ಧರಿಸುತ್ತದೆ.",
-    step3: "೩. ಕ್ರಮ",
-    step3Desc: "ನಿಖರ ಸ್ಥಳದೊಂದಿಗೆ ಸಂಬಂಧಿತ ಇಲಾಖೆಗೆ ತಕ್ಷಣವೇ ಮಾಹಿತಿ ರವಾನೆ.",
-    step4: "೪. ಪರಿಹಾರ",
-    step4Desc: "ಸಮಸ್ಯೆ ಪೂರ್ಣ ಪರಿಹಾರವಾಗುವವರೆಗೆ ನೈಜ ಸಮಯದಲ್ಲಿ ಪ್ರಗತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ."
+    pending: "ಹೊಸ / ಬಾಕಿ ಇದೆ",
+    karnatakaGrid: "ಕರ್ನಾಟಕ ರಾಜ್ಯ ನಾಗರಿಕ ಗ್ರಿಡ್",
+    dashTitle: "ಕರ್ನಾಟಕ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
+    dashSub: "ಎಲ್ಲಾ ನಾಗರಿಕ ವಿವರಗಳನ್ನು ಜನಸೇತು ಶೀಲ್ಡ್ ಮೂಲಕ ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಲಾಗಿದೆ. ಪರಿಶೀಲಿಸಿದ ಸಾರ್ವಜನಿಕ ದತ್ತಾಂಶ ಮಾತ್ರ ಪ್ರದರ್ಶಿಸಲಾಗಿದೆ.",
+    liveIncidentMap: "ಲೈವ್ ಕರ್ನಾಟಕ ಘಟನಾ ನಕ್ಷೆ",
+    constituencyExplorer: "ವಿಧಾನಸಭಾ ಕ್ಷೇತ್ರ ಎಕ್ಸ್‌ಪ್ಲೋರರ್",
+    constituencySub: "ಸ್ಥಳೀಯ ಕ್ಷೇತ್ರ, ಶಾಸಕರ ಅಂಕಿ-ಅಂಶಗಳು ಮತ್ತು ವಾರ್ಡ್ ಸಮಸ್ಯೆಗಳು.",
+    categoriesBreakdown: "ಸಮಸ್ಯೆ ವರ್ಗಗಳ ವಿಶ್ಲೇಷಣೆ",
+    recentPublicIssues: "ಇತ್ತೀಚಿನ ಸಾರ್ವಜನಿಕ ಸಮಸ್ಯೆಗಳು",
+    publicIssuesSub: "ಕರ್ನಾಟಕದ ವಾರ್ಡ್‌ಗಳಲ್ಲಿ ನಾಗರಿಕರು ದಾಖಲಿಸಿದ ನೈಜ ಸಮಯದ ಸಮಸ್ಯೆಗಳು ಮತ್ತು ಪ್ರಗತಿ.",
+    filterAll: "ಎಲ್ಲವೂ",
+    filterHigh: "ತುರ್ತು ಆದ್ಯತೆ",
+    filterMed: "ಮಧ್ಯಮ",
+    filterLow: "ಸಾಮಾನ್ಯ",
+    filterResolved: "ಪರಿಹರಿಸಲಾಗಿದೆ",
+    searchPlaceholder: "224 ಕ್ಷೇತ್ರಗಳನ್ನು ಹುಡುಕಿ (ಉದಾ: ಮೈಸೂರು, ಬೆಂಗಳೂರು ದಕ್ಷಿಣ, ಮಲ್ಲೇಶ್ವರಂ)...",
+    searchIssuesPlaceholder: "ಶೀರ್ಷಿಕೆ, ವರ್ಗ, ವಾರ್ಡ್, ಜಿಲ್ಲೆಯ ಮೂಲಕ ಸಮಸ್ಯೆಗಳನ್ನು ಹುಡುಕಿ...",
+    viewDetails: "ವಿವರಗಳು & AI ವಿಶ್ಲೇಷಣೆ",
+    aiAnalysis: "AI ದೃಷ್ಟಿ ವಿಶ್ಲೇಷಣೆ",
+    statusReported: "ದಾಖಲಾಗಿದೆ",
+    statusUnderReview: "ಪರಿಶೀಲನೆಯಲ್ಲಿದೆ",
+    statusAssigned: "ನಿಯೋಜಿಸಲಾಗಿದೆ",
+    statusInProgress: "ಪ್ರಗತಿಯಲ್ಲಿದೆ",
+    statusResolved: "ಪರಿಹರಿಸಲಾಗಿದೆ",
+    contactAuthority: "ಶಾಸಕರ / ಪ್ರಾಧಿಕಾರದ ಕಚೇರಿ ಸಂಪರ್ಕಿಸಿ",
+    totalLocalIssues: "ಒಟ್ಟು ಸ್ಥಳೀಯ ಸಮಸ್ಯೆಗಳು",
+    resolutionRate: "ಪರಿಹಾರದ ದರ",
+    divisionPerformance: "ವಿಭಾಗ ಮತ್ತು ವಾರ್ಡ್ ಮಟ್ಟದ ಪ್ರಗತಿ",
+    privacyShieldTitle: "ಗೌಪ್ಯತೆ ಮತ್ತು ನಾಗರಿಕ ರಕ್ಷಾ ಕವಚ",
+    privacyShieldDesc: "ನನ್ನ ಗುರುತನ್ನು ರಕ್ಷಿಸಿ (ಅನಾಮಧೇಯ ಮೋಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ). ವೈಯಕ್ತಿಕ ವಿವರಗಳನ್ನು ಸಾರ್ವಜನಿಕರಿಂದ ರಕ್ಷಿಸಲಾಗಿದೆ.",
+    authorityConsoleTitle: "ಪಾಲಿಕೆ ಕ್ಷೇತ್ರ ಕಾರ್ಯಾಚರಣೆಗಳ ನಿಯಂತ್ರಣ",
+    authorityConsoleSub: "ನೈಜ ಸಮಯದ ಸಿವಿಕ್ ನಿಯೋಜನೆ, ತಂಡ ಹಂಚಿಕೆ ಮತ್ತು ಪರಿಶೀಲನಾ ಕನ್ಸೋಲ್.",
+    officerBadge: "ಅಧಿಕಾರಿ ID: #123456",
+    lockConsole: "ಕನ್ಸೋಲ್ ಲಾಕ್ ಮಾಡಿ",
+    aiHelpTitle: "ಜನಸೇತು AI ಹೇಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ",
+    aiHelpSub: "ನಾಗರಿಕ ವರದಿಯಿಂದ ಪಾರದರ್ಶಕ ಪರಿಹಾರದವರೆಗೆ.",
+    aiDemoBadge: "AI ಸಿವಿಕ್ ವಿಶ್ಲೇಷಣೆ ಡೆಮೊ",
+    aiDemoTitle: "ಸ್ವಯಂಚಾಲಿತ ವಿಶ್ಲೇಷಣೆ ಮತ್ತು ಪ್ರಾಧಿಕಾರ ನಿಯೋಜನೆ",
+    aiDemoSub: "ಜನಸೇತು AI ನಾಗರಿಕರ ದೂರುಗಳನ್ನು ಹೇಗೆ ಪರಿಶೀಲಿಸುತ್ತದೆ ಮತ್ತು ಸರಿಯಾದ ಪ್ರಾಧಿಕಾರಕ್ಕೆ ಕಳುಹಿಸುತ್ತದೆ.",
+    aiDemoReportLabel: "ನಾಗರಿಕ ವರದಿ",
+    aiDemoReportText: '"ಮುಖ್ಯ ರಸ್ತೆಯ ಹತ್ತಿರ ದೊಡ್ಡ ಗುಂಡಿ ಬಿದ್ದಿದೆ"',
+    aiDemoCategory: "ರಸ್ತೆ ಹಾನಿ",
+    aiDemoPriority: "ತುರ್ತು",
+    aiDemoLocation: "ಮೈಸೂರು",
+    aiDemoAuthority: "ಮಹಾನಗರ ಪಾಲಿಕೆ",
+    aiDemoCategoryLabel: "ವರ್ಗ",
+    aiDemoPriorityLabel: "ಆದ್ಯತೆ",
+    aiDemoLocationLabel: "ಸ್ಥಳ",
+    aiDemoAuthorityLabel: "ನಿಯೋಜಿತ ಪ್ರಾಧಿಕಾರ",
+    illustrativeMetrics: "ವಿವರಣಾತ್ಮಕ ವೇದಿಕೆಯ ದತ್ತಾಂಶ",
+    howItWorksPipeline: "ನಾಗರಿಕ ಹೊಣೆಗಾರಿಕೆಯ ಹಂತಗಳು",
+    stage1Title: "೧. ಗ್ರಹಿಕೆ",
+    stage1Desc: "ಕನ್ನಡ ಮತ್ತು ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ ನಾಗರಿಕರ ಧ್ವನಿ ಮತ್ತು ಪಠ್ಯ ಸಂದೇಶಗಳನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಗ್ರಹಿಸುತ್ತದೆ.",
+    stage2Title: "೨. ವರ್ಗೀಕರಣ",
+    stage2Desc: "ಛಾಯಾಚಿತ್ರಗಳಿಂದ ಸಮಸ್ಯೆಯ ಪ್ರಕಾರವನ್ನು (ರಸ್ತೆ, ನೈರ್ಮಲ್ಯ, ನೀರು) ನಿಖರವಾಗಿ ವರ್ಗೀಕರಿಸುತ್ತದೆ.",
+    stage3Title: "೩. ಆದ್ಯತೆ",
+    stage3Desc: "ಅಪಾಯದ ತೀವ್ರತೆಯನ್ನು (ಹೆಚ್ಚು / ಮಧ್ಯಮ / ಕಡಿಮೆ) ಲೆಕ್ಕಹಾಕಿ ತಕ್ಷಣದ ಆದ್ಯತೆ ನೀಡುತ್ತದೆ.",
+    stage4Title: "೪. ಮಾರ್ಗಸೂಚಿ",
+    stage4Desc: "ಸ್ಥಳದ ಜಿಯೋ-ಕೋಆರ್ಡಿನೇಟ್‌ಗಳನ್ನು ಆಧರಿಸಿ ಸರಿಯಾದ ಕರ್ನಾಟಕ ನಗರ ಪಾಲಿಕೆ ವಾರ್ಡ್‌ಗೆ ಕಳುಹಿಸುತ್ತದೆ.",
+    stage5Title: "೫. ಟ್ರ್ಯಾಕಿಂಗ್",
+    stage5Desc: "ದೂರು ದಾಖಲಾದಂದಿನಿಂದ ಅಧಿಕೃತ ಪೂರ್ಣ ಪರಿಹಾರದವರೆಗೆ ನೈಜ ಸಮಯದ ಪ್ರಗತಿ ಟ್ರ್ಯಾಕಿಂಗ್ ನೀಡುತ್ತದೆ.",
+    footerDesc: "ಕರ್ನಾಟಕದ ನಾಗರಿಕರನ್ನು ನೇರವಾಗಿ ಪಾಲಿಕೆ ಅಧಿಕಾರಿಗಳೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿ ತ್ವರಿತ ಪರಿಹಾರ ಒದಗಿಸುವ AI ಚಾಲಿತ ವೇದಿಕೆ.",
+    footerCitizenPlatform: "ನಾಗರಿಕ ವೇದಿಕೆ",
+    footerAiRights: "AI ಮತ್ತು ಹಕ್ಕುಗಳು",
+    footerAuthorityPortal: "ಪ್ರಾಧಿಕಾರ ಪೋರ್ಟಲ್",
+    footerGovTag: "ಕರ್ನಾಟಕ ಸರ್ಕಾರ ಸಿವಿಕ್ ಟೆಕ್",
+    statusFlowReported: "ದಾಖಲಾಗಿದೆ",
+    statusFlowAssigned: "ನಿಯೋಜಿಸಲಾಗಿದೆ",
+    statusFlowProgress: "ಪ್ರಗತಿಯಲ್ಲಿದೆ",
+    statusFlowResolved: "ಪರಿಹರಿಸಲಾಗಿದೆ",
+    close: "ಮುಚ್ಚಿ",
+    upvote: "ಬೆಂಬಲಿಸಿ",
+    upvotes: "ಬೆಂಬಲಗಳು",
+    guestMode: "ಅತಿಥಿಯಾಗಿ ಬಳಸಿ",
+    signIn: "ಲಾಗಿನ್ ಆಗಿ",
+    register: "ನೋಂದಾಯಿಸಿ"
   }
 };
 
 const HUMAN_RIGHTS_DATA = [
-  {
-    en: "RIGHT TO EQUALITY",
-    kn: "ಸಮಾನತೆಯ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO FREEDOM OF SPEECH",
-    kn: "ಅಭಿವ್ಯಕ್ತಿ ಸ್ವಾತಂತ್ರ್ಯದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO LIFE & LIBERTY",
-    kn: "ಜೀವಿಸುವ ಮತ್ತು ವೈಯಕ್ತಿಕ ಸ್ವಾತಂತ್ರ್ಯದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO EDUCATION",
-    kn: "ಶಿಕ್ಷಣದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO CLEAN ENVIRONMENT",
-    kn: "ಸ್ವಚ್ಛ ಪರಿಸರದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO INFORMATION",
-    kn: "ಮಾಹಿತಿ ಹಕ್ಕು (RTI)"
-  },
-  {
-    en: "RIGHT TO CONSTITUTIONAL REMEDIES",
-    kn: "ಸಾಂವಿಧಾನಿಕ ಪರಿಹಾರಗಳ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT AGAINST EXPLOITATION",
-    kn: "ಶೋಷಣೆಯ ವಿರುದ್ಧದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO PRIVACY",
-    kn: "ಗೌಪ್ಯತೆಯ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO HEALTH & SANITATION",
-    kn: "ಆರೋಗ್ಯ ಮತ್ತು ನೈರ್ಮಲ್ಯದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO ACCESSIBLE INFRASTRUCTURE",
-    kn: "ಮೂಲಸೌಕರ್ಯದ ಹಕ್ಕು"
-  },
-  {
-    en: "RIGHT TO FAIR ADMINISTRATIVE ACTION",
-    kn: "ನ್ಯಾಯಯುತ ಆಡಳಿತದ ಹಕ್ಕು"
-  }
+  "RIGHT TO EQUALITY",
+  "RIGHT TO DIGNITY",
+  "RIGHT TO JUSTICE",
+  "RIGHT TO CLEAN ENVIRONMENT",
+  "RIGHT TO EDUCATION",
+  "RIGHT TO INFORMATION",
+  "RIGHT TO PRIVACY",
+  "RIGHT TO HEALTH & SANITATION"
 ];
 
 const KARNATAKA_DISTRICTS_MAP = {
-  "Mysuru": [
-    "Chamaraja",
-    "Chamundeshwari",
-    "Krishnaraja",
-    "Narasimharaja",
-    "Varuna",
-    "Hunsur",
-    "Nanjangud",
-    "Periyapatna",
-    "T. Narasipura"
+  "Bagalkote": [
+    "Mudhol",
+    "Terdal",
+    "Jamkhandi",
+    "Bilgi",
+    "Badami",
+    "Bagalkot",
+    "Hungund"
   ],
-  "Bengaluru Urban": [
-    "Malleshwaram",
-    "BTM Layout",
-    "Jayanagar",
-    "Bengaluru South",
-    "Shivajinagar",
-    "Mahadevapura",
-    "Rajajinagar",
-    "Shanti Nagar",
-    "Chickpet",
-    "Basavanagudi",
-    "Padmanaba Nagar",
-    "Yeshwanthpur",
-    "Byatarayanapura",
-    "K.R. Puram",
-    "Hebbal",
-    "Sarvagnanagar",
-    "C.V. Raman Nagar",
-    "Pulakeshinagar",
-    "Gandhi Nagar",
-    "Vijayanagar",
-    "Govindraj Nagar",
-    "Dasarahalli",
-    "Yelahanka",
-    "Bommanahalli",
-    "Anekal"
+  "Ballari": [
+    "Kampli",
+    "Siruguppa",
+    "Ballari Rural",
+    "Ballari City",
+    "Sandur"
+  ],
+  "Belagavi": [
+    "Nippani",
+    "Chikkodi-Sadalga",
+    "Athani",
+    "Kagwad",
+    "Kudachi",
+    "Raybag",
+    "Hukkeri",
+    "Arabhavi",
+    "Gokak",
+    "Yemkanmardi",
+    "Belagavi Uttar",
+    "Belagavi Dakshin",
+    "Belagavi Rural",
+    "Khanapur",
+    "Kittur",
+    "Bailhongal",
+    "Saundatti Yellamma",
+    "Ramdurg"
   ],
   "Bengaluru Rural": [
     "Nelamangala",
@@ -451,99 +882,249 @@ const KARNATAKA_DISTRICTS_MAP = {
     "Devanahalli",
     "Hosakote"
   ],
-  "Dharwad": [
-    "Hubballi-Dharwad Central",
-    "Hubballi-Dharwad East",
-    "Hubballi-Dharwad West",
-    "Dharwad",
-    "Navalgund",
-    "Kundgol",
-    "Kalghatgi"
+  "Bengaluru Urban": [
+    "Yelahanka",
+    "Byatarayanapura",
+    "Yeshwanthpur",
+    "Dasarahalli",
+    "Mahalakshmi Layout",
+    "Malleshwaram",
+    "Hebbal",
+    "Pulakeshinagar",
+    "Sarvagnanagar",
+    "C.V. Raman Nagar",
+    "Shivajinagar",
+    "Shanti Nagar",
+    "Gandhi Nagar",
+    "Rajajinagar",
+    "Govindraj Nagar",
+    "Vijay Nagar",
+    "Chamrajpet",
+    "Chickpet",
+    "Basavanagudi",
+    "Padmanaba Nagar",
+    "BTM Layout",
+    "Jayanagar",
+    "Mahadevapura",
+    "Bommanahalli",
+    "Bengaluru South",
+    "Anekal",
+    "Rajarajeshwarinagar",
+    "K.R. Puram"
+  ],
+  "Bidar": [
+    "Aurad",
+    "Bhalki",
+    "Humnabad",
+    "Bidar South",
+    "Bidar",
+    "Basavakalyan"
+  ],
+  "Chamarajanagara": [
+    "Hanur",
+    "Kollegal",
+    "Chamarajanagar",
+    "Gundlupet"
+  ],
+  "Chikkaballapura": [
+    "Gauribidanur",
+    "Bagepalli",
+    "Chikkaballapur",
+    "Sidlaghatta",
+    "Chintamani"
+  ],
+  "Chikkamagaluru": [
+    "Sringeri",
+    "Mudigere",
+    "Chikkamagaluru",
+    "Tarikere",
+    "Kadur"
+  ],
+  "Chitradurga": [
+    "Molakalmuru",
+    "Challakere",
+    "Chitradurga",
+    "Hiriyur",
+    "Hosadurga",
+    "Holalkere"
   ],
   "Dakshina Kannada": [
-    "Mangaluru City South",
+    "Belthangady",
+    "Moodabidri",
     "Mangaluru City North",
+    "Mangaluru City South",
     "Mangaluru",
     "Bantwal",
     "Puttur",
-    "Sullia",
-    "Belthangady",
-    "Moodabidri"
+    "Sullia"
   ],
-  "Belagavi": [
-    "Belagavi Uttar",
-    "Belagavi Dakshin",
-    "Belagavi Rural",
-    "Gokak",
-    "Chikkodi-Sadalga",
-    "Bailhongal",
-    "Athani",
-    "Kagwad",
-    "Kudachi",
-    "Raybag",
-    "Hukkeri",
-    "Arabhavi",
-    "Yemkanmardi",
-    "Kittur",
-    "Ramdurg",
-    "Saundatti Yellamma",
-    "Nippani"
+  "Davanagere": [
+    "Jagalur",
+    "Harihar",
+    "Davanagere North",
+    "Davanagere South",
+    "Mayakonda",
+    "Channagiri",
+    "Honnali"
   ],
-  "Shivamogga": [
-    "Shivamogga Urban",
-    "Shivamogga Rural",
-    "Bhadravati",
-    "Thirthahalli",
-    "Sagara",
-    "Shikaripura",
-    "Soraba"
+  "Dharwad": [
+    "Navalgund",
+    "Kundgol",
+    "Dharwad",
+    "Hubballi-Dharwad East",
+    "Hubballi-Dharwad Central",
+    "Hubballi-Dharwad West",
+    "Kalghatgi"
   ],
-  "Tumakuru": [
-    "Tumakuru City",
-    "Tumakuru Rural",
-    "Tiptur",
-    "Sira",
-    "Gubbi",
-    "Kunigal",
-    "Madhugiri",
-    "Pavagada",
-    "Chiknayakanhalli",
-    "Turuvekere"
+  "Gadag": [
+    "Shirahatti",
+    "Gadag",
+    "Ron",
+    "Nargund"
   ],
   "Hassan": [
-    "Hassan",
-    "Holenarasipur",
+    "Shravanabelagola",
     "Arsikere",
     "Belur",
-    "Sakleshpur",
-    "Channarayapatna",
+    "Hassan",
+    "Holenarasipur",
     "Arkalgud",
-    "Shravanabelagola"
+    "Sakleshpur"
+  ],
+  "Haveri": [
+    "Hangal",
+    "Shiggaon",
+    "Haveri",
+    "Byadgi",
+    "Hirekerur",
+    "Ranebennur"
   ],
   "Kalaburagi": [
-    "Kalaburagi Uttar",
-    "Kalaburagi Dakshin",
-    "Kalaburagi Rural",
     "Afzalpur",
     "Jevargi",
-    "Sedam",
     "Chittapur",
-    "Aland",
-    "Chincholi"
+    "Sedam",
+    "Chincholi",
+    "Kalaburagi Rural",
+    "Kalaburagi Dakshin",
+    "Kalaburagi Uttar",
+    "Aland"
   ],
-  "Ballari": [
-    "Ballari City",
-    "Ballari Rural",
-    "Siruguppa",
-    "Kampli",
-    "Sandur"
+  "Kodagu": [
+    "Madikeri",
+    "Virajpet"
+  ],
+  "Kolar": [
+    "Srinivaspur",
+    "Mulbagal",
+    "KGF",
+    "Bangarapet",
+    "Kolar",
+    "Malur"
+  ],
+  "Koppal": [
+    "Kushtagi",
+    "Kanakagiri",
+    "Gangawati",
+    "Yelburga",
+    "Koppal"
+  ],
+  "Mandya": [
+    "Malavalli",
+    "Maddur",
+    "Melukote",
+    "Mandya",
+    "Srirangapatna",
+    "Nagamangala",
+    "Krishnarajpet"
+  ],
+  "Mysuru": [
+    "Piriyapatna",
+    "Krishnarajanagara",
+    "Hunsur",
+    "Heggadadevankote",
+    "Nanjangud",
+    "Chamundeshwari",
+    "Krishnaraja",
+    "Chamaraja",
+    "Narasimharaja",
+    "Varuna",
+    "T. Narasipura"
+  ],
+  "Raichur": [
+    "Raichur Rural",
+    "Raichur",
+    "Manvi",
+    "Devadurga",
+    "Lingsugur",
+    "Sindhanur",
+    "Maski"
+  ],
+  "Ramanagara": [
+    "Magadi",
+    "Ramanagara",
+    "Kanakapura",
+    "Channapatna"
+  ],
+  "Shivamogga": [
+    "Shimoga Rural",
+    "Bhadravati",
+    "Shivamogga",
+    "Thirthahalli",
+    "Shikaripura",
+    "Soraba",
+    "Sagara"
+  ],
+  "Tumakuru": [
+    "Chiknayakanhalli",
+    "Tiptur",
+    "Turuvekere",
+    "Kunigal",
+    "Tumkur City",
+    "Tumkur Rural",
+    "Koratagere",
+    "Gubbi",
+    "Sira",
+    "Pavagada",
+    "Madhugiri"
   ],
   "Udupi": [
+    "Byndoor",
+    "Kundapura",
     "Udupi",
     "Kaup",
-    "Kundapura",
-    "Karkala",
-    "Byndoor"
+    "Karkala"
+  ],
+  "Uttara Kannada": [
+    "Haliyal",
+    "Karwar",
+    "Kumta",
+    "Bhatkal",
+    "Sirsi",
+    "Yellapur"
+  ],
+  "Vijayanagara": [
+    "Hadagalli",
+    "Hagaribommanahalli",
+    "Vijayanagara",
+    "Kudligi",
+    "Harapanahalli"
+  ],
+  "Vijayapura": [
+    "Muddebihal",
+    "Devar Hippargi",
+    "Basavana Bagevadi",
+    "Babaleshwar",
+    "Bijapur City",
+    "Nagthan",
+    "Indi",
+    "Sindgi"
+  ],
+  "Yadgir": [
+    "Shorapur",
+    "Shahapur",
+    "Yadgir",
+    "Gurmitkal"
   ]
 };
 

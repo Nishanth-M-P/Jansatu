@@ -96,12 +96,6 @@
           <span class="theme-toggle-text hidden sm:inline whitespace-nowrap">Dark</span>
         </button>
 
-        <!-- Language Switcher -->
-        <button id="lang-toggle-btn" onclick="toggleLanguage()" title="Toggle English/Kannada" class="h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap">
-          <span class="material-symbols-outlined text-[16px] text-primary">translate</span>
-          <span class="whitespace-nowrap">English/ಕನ್ನಡ</span>
-        </button>
-
         <a href="authority.html" class="hidden md:inline-flex h-9 px-3.5 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all font-semibold text-xs items-center justify-center gap-1.5 shadow-xs bg-surface shrink-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[16px]">shield_person</span>
           <span data-i18n="btnAuthority" class="whitespace-nowrap">Authority Portal</span>
@@ -281,66 +275,138 @@
           <div class="p-md flex flex-col gap-md">
             <div class="relative">
               <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
-              <input oninput="handleConstituencySearch(this.value)" class="w-full h-11 pl-10 pr-4 bg-surface border border-outline-variant rounded-xl font-body-md text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Search Mysuru, Bengaluru, Malleshwaram..." type="text" value="Mysuru"/>
-            </div>
-
-            <div class="flex flex-wrap gap-1.5">
-              <button onclick="renderConstituencyExplorer('Mysuru')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Mysuru</button>
-              <button onclick="renderConstituencyExplorer('Bengaluru South')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Bengaluru South</button>
-              <button onclick="renderConstituencyExplorer('Malleshwaram')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Malleshwaram</button>
-              <button onclick="renderConstituencyExplorer('Hubballi-Dharwad Central')" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Hubballi</button>
-            </div>
-
-            <!-- MLA Profile Card -->
-            <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md level-2-shadow">
-              <div class="flex items-start gap-md mb-md">
-                <div class="w-16 h-16 rounded-full bg-surface-container overflow-hidden border-2 border-primary/20 shrink-0">
-                  <img id="mla-photo" alt="MLA Profile" class="object-cover w-full h-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRQLMiiqAQUHIxb_7HPS3P25s4UVRL1QdK9RqYrYPZYvQ-NjB4_5RqbId-4JAcfKDGv_nWIAQ40uy6Zih8MY8WpEnYlD2-0aGdjpSfrYuEzbcbVwy_5Ebuni5uinoCjSOqC0INXwYi15BzgFGKzu3SYjU4nlwszJceGVmLnXMKdIVUlWtZfrJwsy3orWazs-rOE7dgp5ZgGmoJFl9IJyK8Z46Z82mGz0FKc1J9qmPzeD5NnjHFyuBkng"/>
-                </div>
-                <div>
-                  <h3 id="mla-name" class="font-headline-md text-[18px] font-bold text-on-surface">K. Govindaraj</h3>
-                  <p id="mla-desig" class="font-label-sm text-label-sm text-primary font-medium mb-1">Member of Legislative Assembly</p>
-                  <span id="mla-party" class="inline-block px-2 py-0.5 bg-surface-container-high rounded font-label-sm text-[11px] text-on-surface-variant font-semibold">Independent / Civic Alliance</span>
-                </div>
-              </div>
-
-              <button onclick="showToast('E-Office Connected', 'Opening MLA constituent grievances desk...', 'success')" class="w-full py-2 bg-surface border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-xs font-semibold">
-                <span class="material-symbols-outlined text-[16px]">account_circle</span>
-                Contact Representative Office
+              <input id="constituency-search-input" list="karnataka-constituency-list" oninput="handleConstituencySearch(this.value)" class="w-full h-11 pl-10 pr-10 bg-surface border border-outline-variant rounded-xl font-body-md text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all" placeholder="Search 224 constituencies (e.g. Mysuru, Varuna, Malleshwaram, Mangaluru)..." type="text" value=""/>
+              <datalist id="karnataka-constituency-list"></datalist>
+              <button onclick="clearConstituencySearch()" title="Clear Selection" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-1">
+                <span class="material-symbols-outlined text-[18px]">close</span>
               </button>
             </div>
 
-            <!-- Local Ward Stats -->
-            <div class="mt-sm">
-              <h4 id="const-stats-title" class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider font-bold">Mysuru Local Stats</h4>
-              <div class="space-y-2.5">
-                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
-                  <span class="font-body-md text-[13px] text-on-surface font-medium">Total Local Issues</span>
-                  <span id="const-total-issues" class="font-label-md text-label-md font-black">1,204</span>
+            <div class="flex flex-wrap gap-1.5" id="constituency-chips">
+              <button onclick="renderConstituencyExplorer(null)" class="const-chip px-2.5 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-xs transition-colors">Karnataka (All)</button>
+              <button onclick="renderConstituencyExplorer('Mysuru')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Mysuru</button>
+              <button onclick="renderConstituencyExplorer('Bengaluru South')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Bengaluru South</button>
+              <button onclick="renderConstituencyExplorer('Malleshwaram')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Malleshwaram</button>
+              <button onclick="renderConstituencyExplorer('Hubballi-Dharwad Central')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Hubballi</button>
+              <button onclick="renderConstituencyExplorer('Mangaluru City South')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Mangaluru</button>
+              <button onclick="renderConstituencyExplorer('Belagavi Uttar')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Belagavi</button>
+              <button onclick="renderConstituencyExplorer('Kalaburagi Dakshin')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Kalaburagi</button>
+              <button onclick="renderConstituencyExplorer('Shivamogga')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Shivamogga</button>
+              <button onclick="renderConstituencyExplorer('Ballari City')" class="const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors">Ballari</button>
+            </div>
+
+            <!-- Empty State for Search -->
+            <div id="constituency-not-found" class="hidden p-6 text-center text-on-surface-variant bg-surface-container-low rounded-xl border border-outline-variant">
+              <span class="material-symbols-outlined text-3xl opacity-50 mb-1 text-primary">location_off</span>
+              <p class="font-bold text-sm text-on-surface">Constituency Not Found</p>
+              <p class="text-xs text-on-surface-variant mt-1">Try searching any of Karnataka's 224 constituencies like <span class="font-semibold text-primary cursor-pointer" onclick="renderConstituencyExplorer('Varuna')">Varuna</span>, <span class="font-semibold text-primary cursor-pointer" onclick="renderConstituencyExplorer('Mangaluru City South')">Mangaluru</span>, <span class="font-semibold text-primary cursor-pointer" onclick="renderConstituencyExplorer('Belagavi Uttar')">Belagavi</span>, or <span class="font-semibold text-primary cursor-pointer" onclick="renderConstituencyExplorer(null)">Karnataka State (All)</span>.</p>
+            </div>
+
+            <!-- Constituency Details Container -->
+            <div id="constituency-details-container" class="space-y-4">
+              <!-- Representative Profile Card -->
+              <div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-md level-2-shadow">
+                <div class="flex items-start gap-md mb-md">
+                  <div class="w-16 h-16 rounded-2xl bg-surface-container-highest p-1.5 overflow-hidden border-2 border-primary/30 shadow-xs shrink-0 flex items-center justify-center">
+                    <img id="mla-photo" alt="Government of Karnataka" class="object-contain w-full h-full" src="assets/karnataka_govt_logo.svg"/>
+                  </div>
+                  <div>
+                    <h3 id="mla-name" class="font-headline-md text-[18px] font-bold text-on-surface">Chief Minister & State Administration</h3>
+                    <p id="mla-desig" class="font-label-sm text-label-sm text-primary font-medium mb-1">Head of Karnataka Urban Development</p>
+                    <span id="mla-party" class="inline-block px-2 py-0.5 bg-surface-container-high rounded font-label-sm text-[11px] text-on-surface-variant font-semibold">Government of Karnataka • State Civic Cell</span>
+                  </div>
                 </div>
-                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
-                  <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
-                    <div class="w-2 h-2 rounded-full bg-error"></div> High Priority
-                  </span>
-                  <span id="const-high-issues" class="font-label-md text-label-md font-black text-error">87</span>
-                </div>
-                <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
-                  <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
-                    <div class="w-2 h-2 rounded-full bg-secondary"></div> Resolution Rate
-                  </span>
-                  <span id="const-rate-issues" class="font-label-md text-label-md font-black text-secondary">68%</span>
-                </div>
+
+                <button id="const-contact-btn" onclick="contactRepresentativeOffice()" class="w-full py-2 bg-surface border border-primary text-primary rounded-lg font-label-md text-label-md hover:bg-primary hover:text-on-primary transition-colors flex items-center justify-center gap-xs font-semibold">
+                  <span class="material-symbols-outlined text-[16px]">account_circle</span>
+                  <span id="const-contact-label">Contact Representative Office</span>
+                </button>
               </div>
 
-              <div class="mt-3">
-                <span class="text-xs font-semibold text-on-surface-variant block mb-2">Ward Level Performance</span>
-                <div id="const-ward-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+              <!-- Local Ward Stats -->
+              <div class="mt-sm">
+                <h4 id="const-stats-title" class="font-label-md text-label-md text-on-surface-variant mb-sm uppercase tracking-wider font-bold">Karnataka Statewide Civic Stats</h4>
+                <div class="space-y-2.5">
+                  <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                    <span class="font-body-md text-[13px] text-on-surface font-medium">Total Local Issues</span>
+                    <span id="const-total-issues" class="font-label-md text-label-md font-black">12,482</span>
+                  </div>
+                  <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                    <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
+                      <div class="w-2 h-2 rounded-full bg-error"></div> High Priority
+                    </span>
+                    <span id="const-high-issues" class="font-label-md text-label-md font-black text-error">458</span>
+                  </div>
+                  <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg">
+                    <span class="font-body-md text-[13px] text-on-surface flex items-center gap-xs font-medium">
+                      <div class="w-2 h-2 rounded-full bg-secondary"></div> Resolution Rate
+                    </span>
+                    <span id="const-rate-issues" class="font-label-md text-label-md font-black text-secondary">62%</span>
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <span class="text-xs font-semibold text-on-surface-variant block mb-2" data-i18n="divisionPerformance">Division & Ward Level Performance</span>
+                  <div id="const-ward-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- ================= SECTION: RECENT & PRIORITY PUBLIC ISSUES FEED ================= -->
+    <section class="bg-surface rounded-2xl border border-outline-variant level-2-shadow p-6 flex flex-col gap-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-outline-variant pb-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-xs mb-2">
+            <span class="material-symbols-outlined text-[16px]">visibility</span>
+            <span>Civic Transparency Feed</span>
+          </div>
+          <h2 data-i18n="recentPublicIssues" class="font-headline-lg text-[22px] font-black text-on-surface">Recent & Priority Public Issues</h2>
+          <p data-i18n="publicIssuesSub" class="font-body-md text-xs text-on-surface-variant mt-1">Real-time citizen reports and verified field triage across Karnataka wards.</p>
+        </div>
+        
+        <!-- Search & Quick Filter Controls -->
+        <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div class="relative w-full sm:w-80">
+            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+            <input id="public-issues-search" oninput="handlePublicIssuesSearch(this.value)" type="text" placeholder="Search by title, category, ward..." class="w-full h-10 pl-9 pr-8 bg-surface-container-low border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none transition-all" />
+            <button onclick="document.getElementById('public-issues-search').value=''; handlePublicIssuesSearch('');" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface p-0.5">
+              <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Controls Toolbar -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <!-- Category Filter Pills -->
+        <div class="flex flex-wrap items-center gap-1.5" id="public-issue-cat-filters">
+          <button onclick="filterPublicIssues('cat', 'all')" class="issue-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-primary text-white shadow-xs transition-colors" data-filter-type="cat" data-filter-val="all">All Categories</button>
+          <button onclick="filterPublicIssues('cat', 'Sanitation')" class="issue-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors text-on-surface" data-filter-type="cat" data-filter-val="Sanitation">🗑️ Sanitation</button>
+          <button onclick="filterPublicIssues('cat', 'Roads')" class="issue-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors text-on-surface" data-filter-type="cat" data-filter-val="Roads">🚧 Roads</button>
+          <button onclick="filterPublicIssues('cat', 'Water')" class="issue-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors text-on-surface" data-filter-type="cat" data-filter-val="Water">💧 Water</button>
+          <button onclick="filterPublicIssues('cat', 'Electricity')" class="issue-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors text-on-surface" data-filter-type="cat" data-filter-val="Electricity">💡 Electricity</button>
+        </div>
+
+        <!-- Status Filter Pills -->
+        <div class="flex flex-wrap items-center gap-1.5" id="public-issue-status-filters">
+          <span class="text-xs font-semibold text-on-surface-variant mr-1">Status:</span>
+          <button onclick="filterPublicIssues('status', 'all')" class="status-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/30" data-filter-type="status" data-filter-val="all">All</button>
+          <button onclick="filterPublicIssues('status', 'New')" class="status-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container-high" data-filter-type="status" data-filter-val="New">Reported</button>
+          <button onclick="filterPublicIssues('status', 'Under Review')" class="status-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container-high" data-filter-type="status" data-filter-val="Under Review">Under Review</button>
+          <button onclick="filterPublicIssues('status', 'Assigned')" class="status-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container-high" data-filter-type="status" data-filter-val="Assigned">Assigned</button>
+          <button onclick="filterPublicIssues('status', 'Resolved')" class="status-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container-high" data-filter-type="status" data-filter-val="Resolved">Resolved</button>
+        </div>
+      </div>
+
+      <!-- Public Issues Feed Grid -->
+      <div id="public-issues-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Dynamically rendered via app.js -->
+      </div>
+    </section>
   </main>
 
   <!-- Footer -->

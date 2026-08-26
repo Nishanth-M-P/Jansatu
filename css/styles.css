@@ -260,6 +260,66 @@ html.dark .stepper-line {
 html.dark .leaflet-popup-content-wrapper {
   background: #171d27 !important;
   color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .leaflet-popup-tip {
+  background: #171d27 !important;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+html.dark .leaflet-container {
+  background: #0f141c !important;
+}
+
+html.dark .leaflet-popup-content h4 {
+  color: #f8fafc !important;
+}
+
+html.dark .leaflet-popup-content p {
+  color: #94a3b8 !important;
+}
+
+/* Glass panel enhancements */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html.dark .glass-panel {
+  background: rgba(23, 29, 39, 0.85) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Micro-interaction Card Elevate */
+.interactive-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.interactive-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.3);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.5);
 }
 
 /* Toast Container */
@@ -289,29 +349,32 @@ html.dark .leaflet-popup-content-wrapper {
 /* ==========================================
    Header & Navbar Single-Line Layout Stability
    ========================================== */
-header {
+#main-navbar {
   height: 64px !important;
   max-height: 64px !important;
   box-sizing: border-box !important;
   flex-shrink: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
-header * {
+#main-navbar * {
   box-sizing: border-box;
 }
 
-header nav,
-header .nav-link,
-header button,
-header a,
-header span,
+#main-navbar nav,
+#main-navbar .nav-link,
+#main-navbar button,
+#main-navbar a,
+#main-navbar span,
 .auth-user-slot,
 .theme-toggle-btn {
   white-space: nowrap !important;
   flex-shrink: 0;
 }
 
-header .nav-link {
+#main-navbar .nav-link {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -320,10 +383,35 @@ header .nav-link {
   white-space: nowrap !important;
 }
 
-header nav {
+#main-navbar nav {
   display: flex;
   align-items: center;
   flex-wrap: nowrap !important;
+}
+
+#main-navbar .nav-link.nav-link-active {
+  color: #00236f !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+#main-navbar .nav-link.nav-link-active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #00236f;
+  border-radius: 2px 2px 0 0;
+}
+
+html.dark #main-navbar .nav-link.nav-link-active {
+  color: #60a5fa !important;
+}
+
+html.dark #main-navbar .nav-link.nav-link-active::after {
+  background-color: #60a5fa;
 }
 
 /* ==========================================
@@ -408,6 +496,32 @@ html.dark .human-right-pill:hover {
     animation: marquee-slide 100s linear infinite;
   }
 }
+
+/* Connected 5-Stage Workflow Pipeline Connectors */
+.workflow-step-card {
+  position: relative;
+  transition: all 0.25s ease;
+}
+
+@media (min-width: 1024px) {
+  .workflow-step-card:not(:last-child)::after {
+    content: '→';
+    position: absolute;
+    right: -14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-weight: 800;
+    font-size: 16px;
+    color: rgba(0, 35, 111, 0.35);
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  html.dark .workflow-step-card:not(:last-child)::after {
+    color: rgba(255, 255, 255, 0.25);
+  }
+}
+
 
 
 

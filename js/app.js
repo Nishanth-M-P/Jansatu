@@ -14,7 +14,7 @@ const AppState = {
   currentReportStep: 1,
   recordingVoice: false,
   voiceInterval: null,
-  activeConstituency: 'Mysuru',
+  activeConstituency: null,
   currentDraftAnalysis: { ...PRESET_ANALYSES.garbage }
 };
 
@@ -35,6 +35,10 @@ function initIssuesData() {
 
 function saveIssuesToStorage() {
   localStorage.setItem('jansetu_issues', JSON.stringify(AppState.issues));
+}
+
+function saveIssuesData() {
+  saveIssuesToStorage();
 }
 
 // Toast Notifications
@@ -99,10 +103,10 @@ function switchView(viewName) {
   document.querySelectorAll('.nav-link').forEach(link => {
     const target = link.getAttribute('data-nav-target');
     if (target === viewName) {
-      link.classList.add('text-primary', 'font-bold', 'border-b-2', 'border-primary');
+      link.classList.add('nav-link-active');
       link.classList.remove('text-on-surface-variant');
     } else {
-      link.classList.remove('text-primary', 'font-bold', 'border-b-2', 'border-primary');
+      link.classList.remove('nav-link-active');
       link.classList.add('text-on-surface-variant');
     }
   });
@@ -122,12 +126,26 @@ function switchView(viewName) {
 }
 
 
-// Language Switcher
+// Language Switcher & Global Translation Engine
+function initLanguage() {
+  const savedLang = localStorage.getItem('jansetu_lang') || 'en';
+  AppState.currentLang = savedLang;
+  applyLanguageUI();
+}
+
 function toggleLanguage() {
   AppState.currentLang = AppState.currentLang === 'en' ? 'kn' : 'en';
-  const langKey = AppState.currentLang;
-  const t = I18N[langKey];
+  localStorage.setItem('jansetu_lang', AppState.currentLang);
+  applyLanguageUI();
+  showToast(AppState.currentLang === 'en' ? 'Language switched to English' : 'ಭಾಷೆಯನ್ನು ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಲಾಗಿದೆ', '', 'info');
+}
 
+function applyLanguageUI() {
+  const langKey = AppState.currentLang || 'en';
+  const t = I18N[langKey] || I18N.en;
+  document.documentElement.lang = langKey;
+
+  // Translate all text elements with data-i18n
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (t[key]) {
@@ -135,17 +153,29 @@ function toggleLanguage() {
     }
   });
 
+  // Translate placeholder attributes
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.getAttribute('data-i18n-placeholder');
+    if (t[key]) {
+      el.placeholder = t[key];
+    }
+  });
+
+  // Update navbar language button
   const langBtn = document.getElementById('lang-toggle-btn');
   if (langBtn) {
     langBtn.innerHTML = `
       <span class="material-symbols-outlined text-[16px] text-primary">translate</span>
-      <span class="whitespace-nowrap">${langKey === 'en' ? 'English/ಕನ್ನಡ' : 'ಕನ್ನಡ/EN'}</span>
+      <span class="whitespace-nowrap font-bold">${langKey === 'en' ? 'English / ಕನ್ನಡ' : 'ಕನ್ನಡ / English'}</span>
     `;
   }
 
+  // Re-render language-sensitive components
+  renderHumanRightsMarquee();
   updateAuthUI();
-
-  showToast(langKey === 'en' ? 'Language switched to English' : 'ಭಾಷೆಯನ್ನು ಕನ್ನಡಕ್ಕೆ ಬದಲಾಯಿಸಲಾಗಿದೆ', '', 'info');
+  if (document.getElementById('public-issues-grid')) {
+    renderPublicIssuesList();
+  }
 }
 
 
@@ -213,11 +243,12 @@ function runAIVisionScan(presetKey = 'garbage', customImageUrl = null) {
   const statusPill = document.getElementById('ai-status-pill');
   const catEl = document.getElementById('ai-cat-val');
   const sevEl = document.getElementById('ai-sev-val');
+  const authEl = document.getElementById('ai-auth-val');
+  const actionEl = document.getElementById('ai-action-val');
   const objEl = document.getElementById('ai-obj-val');
-  const confEl = document.getElementById('ai-conf-val');
-  const confBar = document.getElementById('ai-conf-bar');
   const draftBox = document.getElementById('ai-draft-box');
   const descText = document.getElementById('issue-description');
+  const locInput = document.getElementById('report-loc-input');
 
   if (imgPreview) {
     imgPreview.src = AppState.currentDraftAnalysis.image;
@@ -228,7 +259,7 @@ function runAIVisionScan(presetKey = 'garbage', customImageUrl = null) {
   if (statusPill) {
     statusPill.innerHTML = `
       <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
-      <span class="font-label-sm text-label-sm text-primary font-bold">Scanning with Gemini Vision...</span>
+      <span class="font-label-sm text-label-sm text-primary font-bold">Analyzing...</span>
     `;
     statusPill.className = 'px-3 py-1 bg-primary/10 rounded-full flex items-center gap-xs border border-primary/20 animate-pulse';
   }
@@ -239,7 +270,7 @@ function runAIVisionScan(presetKey = 'garbage', customImageUrl = null) {
     if (statusPill) {
       statusPill.innerHTML = `
         <span class="w-2 h-2 rounded-full bg-secondary"></span>
-        <span class="font-label-sm text-label-sm text-secondary font-bold">Analysis Complete (AI Vision)</span>
+        <span class="font-label-sm text-label-sm text-secondary font-bold">✓ Analysis Complete</span>
       `;
       statusPill.className = 'px-3 py-1 bg-secondary/10 rounded-full flex items-center gap-xs border border-secondary/20';
     }
@@ -247,20 +278,33 @@ function runAIVisionScan(presetKey = 'garbage', customImageUrl = null) {
     if (catEl) catEl.innerText = AppState.currentDraftAnalysis.category;
     if (sevEl) {
       sevEl.innerHTML = `
-        <span class="w-3 h-3 rounded-full ${analysis.severity === 'High' ? 'bg-error' : 'bg-tertiary-container'}"></span>
-        <span class="font-label-md text-label-md font-bold ${analysis.severity === 'High' ? 'text-error' : 'text-on-tertiary-container'}">${analysis.severity}</span>
+        <span class="w-2.5 h-2.5 rounded-full ${analysis.severity === 'High' ? 'bg-error' : 'bg-amber-500'}"></span>
+        <span class="font-label-md text-label-md font-bold ${analysis.severity === 'High' ? 'text-error' : 'text-amber-600'}">${analysis.severity} Priority</span>
       `;
     }
-    if (objEl) objEl.innerText = AppState.currentDraftAnalysis.objects;
-    if (confEl) confEl.innerText = `${AppState.currentDraftAnalysis.confidence}%`;
-    if (confBar) confBar.style.width = `${AppState.currentDraftAnalysis.confidence}%`;
-    if (draftBox) draftBox.innerText = `"${AppState.currentDraftAnalysis.draft}"`;
-    if (descText && (!descText.value || descText.value.length < 10 || descText.value.startsWith('There is garbage'))) {
-      descText.value = AppState.currentDraftAnalysis.draft;
+
+    const whyPrioEl = document.getElementById('ai-why-prio');
+    if (whyPrioEl) {
+      const whyMap = {
+        garbage: 'Health hazard + school vicinity + waste accumulation',
+        pothole: 'High traffic zone + skidding hazard + two-wheeler safety',
+        water: 'Potable water loss + sidewalk flooding + residential zone',
+        streetlight: 'Multiple unlit fixtures + night safety + commercial corridor'
+      };
+      const explanation = whyMap[presetKey] || 'Calculated based on hazard severity and public impact';
+      whyPrioEl.setAttribute('title', explanation);
+      whyPrioEl.innerText = analysis.severity === 'High' ? 'Why High?' : 'Why Medium?';
     }
 
+    if (authEl) authEl.innerText = AppState.currentDraftAnalysis.recommendedAuthority || 'MCC Field Operations';
+    if (actionEl) actionEl.innerText = AppState.currentDraftAnalysis.suggestedAction || 'Inspection and triage dispatch';
+    if (objEl) objEl.innerText = AppState.currentDraftAnalysis.objects;
+    if (draftBox) draftBox.innerText = `"${AppState.currentDraftAnalysis.draft}"`;
+    if (descText) descText.value = AppState.currentDraftAnalysis.draft;
+    if (locInput && AppState.currentDraftAnalysis.location) locInput.value = AppState.currentDraftAnalysis.location;
+
     showToast('AI Vision Analysis Complete', `Detected ${AppState.currentDraftAnalysis.category} • Severity: ${AppState.currentDraftAnalysis.severity}`, 'success');
-  }, 1000);
+  }, 900);
 }
 
 function triggerVoiceRecording() {
@@ -422,6 +466,7 @@ function submitNewReport() {
 // ==========================================
 
 function initDashboardView() {
+  populateConstituencyDatalist();
   renderDashboardStats();
   renderConstituencyExplorer();
   initLiveMap();
@@ -542,11 +587,184 @@ function filterMap(type) {
   renderMapMarkers();
 }
 
-// Constituency Explorer
-function renderConstituencyExplorer(name = 'Mysuru') {
-  AppState.activeConstituency = name;
-  const data = CONSTITUENCIES_DATA[name] || CONSTITUENCIES_DATA['Mysuru'];
+// ==========================================
+// CONSTITUENCY EXPLORER & REPRESENTATIVE ENGINE
+// ==========================================
 
+function findDistrictForConstituency(constName) {
+  if (typeof KARNATAKA_DISTRICTS_MAP === 'undefined') return 'Karnataka';
+  const lower = constName.toLowerCase();
+  for (const [district, list] of Object.entries(KARNATAKA_DISTRICTS_MAP)) {
+    if (list.some(c => c.toLowerCase() === lower || c.toLowerCase().includes(lower) || lower.includes(c.toLowerCase()))) {
+      return district;
+    }
+  }
+  return 'Karnataka';
+}
+
+function generateConstituencyProfile(name, district = null) {
+  const dist = district || findDistrictForConstituency(name);
+  // Deterministic pseudo-random numbers from name hash
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = ((hash << 5) - hash) + name.charCodeAt(i);
+    hash |= 0;
+  }
+  const absHash = Math.abs(hash);
+  const totalIssues = 450 + (absHash % 1400);
+  const highPriority = 28 + (absHash % 75);
+  const resolvedPct = 62 + (absHash % 24);
+
+  return {
+    name: `${name} (${dist})`,
+    district: dist,
+    mlaName: `MLA Legislative Office - ${name}`,
+    designation: "Member of Legislative Assembly (MLA)",
+    party: "Karnataka Legislative Assembly",
+    photo: "assets/karnataka_govt_logo.svg",
+    email: `mla.${name.toLowerCase().replace(/[^a-z0-9]/g, '')}@karnataka.gov.in`,
+    officeLocation: `Taluk & Assembly Constituency Office, Mini Vidhana Soudha, ${dist}`,
+    totalIssues: totalIssues,
+    highPriority: highPriority,
+    resolvedRate: `${resolvedPct}%`,
+    wards: [
+      { name: `${name} Urban / Ward 01`, active: 6 + (absHash % 12), resolved: 28 + (absHash % 30) },
+      { name: `${name} Central Ward 02`, active: 4 + ((absHash >> 2) % 10), resolved: 35 + (absHash % 25) },
+      { name: `${name} Rural Hobli Division`, active: 8 + ((absHash >> 4) % 14), resolved: 40 + (absHash % 35) }
+    ]
+  };
+}
+
+function getConstituencyData(name) {
+  if (!name || !name.trim()) return null;
+  const query = name.trim();
+  const lowerQuery = query.toLowerCase();
+
+  // 1. Direct or exact match in CONSTITUENCIES_DATA
+  if (typeof CONSTITUENCIES_DATA !== 'undefined') {
+    if (CONSTITUENCIES_DATA[query]) return CONSTITUENCIES_DATA[query];
+    const matchKey = Object.keys(CONSTITUENCIES_DATA).find(k => 
+      k.toLowerCase() === lowerQuery ||
+      (CONSTITUENCIES_DATA[k].name && CONSTITUENCIES_DATA[k].name.toLowerCase() === lowerQuery)
+    );
+    if (matchKey) return CONSTITUENCIES_DATA[matchKey];
+  }
+
+  // 2. Exact match in all 224 constituencies in KARNATAKA_DISTRICTS_MAP
+  if (typeof KARNATAKA_DISTRICTS_MAP !== 'undefined') {
+    for (const [dist, list] of Object.entries(KARNATAKA_DISTRICTS_MAP)) {
+      const match = list.find(c => c.toLowerCase() === lowerQuery);
+      if (match) {
+        return generateConstituencyProfile(match, dist);
+      }
+    }
+    // Partial search in 224 constituencies
+    for (const [dist, list] of Object.entries(KARNATAKA_DISTRICTS_MAP)) {
+      const match = list.find(c => c.toLowerCase().includes(lowerQuery) || lowerQuery.includes(c.toLowerCase()));
+      if (match) {
+        return generateConstituencyProfile(match, dist);
+      }
+    }
+    // District name match (e.g. if user searches "Bagalkote" or "Tumakuru")
+    const distKey = Object.keys(KARNATAKA_DISTRICTS_MAP).find(d => d.toLowerCase() === lowerQuery || d.toLowerCase().includes(lowerQuery));
+    if (distKey && KARNATAKA_DISTRICTS_MAP[distKey].length > 0) {
+      const firstConst = KARNATAKA_DISTRICTS_MAP[distKey][0];
+      return generateConstituencyProfile(firstConst, distKey);
+    }
+  }
+
+  // Partial match in CONSTITUENCIES_DATA
+  if (typeof CONSTITUENCIES_DATA !== 'undefined') {
+    const matchKey = Object.keys(CONSTITUENCIES_DATA).find(k => 
+      k.toLowerCase().includes(lowerQuery) ||
+      (CONSTITUENCIES_DATA[k].name && CONSTITUENCIES_DATA[k].name.toLowerCase().includes(lowerQuery)) ||
+      (CONSTITUENCIES_DATA[k].district && CONSTITUENCIES_DATA[k].district.toLowerCase().includes(lowerQuery))
+    );
+    if (matchKey) return CONSTITUENCIES_DATA[matchKey];
+  }
+
+  return null;
+}
+
+function populateConstituencyDatalist() {
+  if (typeof KARNATAKA_DISTRICTS_MAP === 'undefined') return;
+  const datalists = document.querySelectorAll('#karnataka-constituency-list');
+  if (!datalists.length) return;
+
+  let optionsHtml = '';
+  Object.entries(KARNATAKA_DISTRICTS_MAP).forEach(([district, list]) => {
+    list.forEach(c => {
+      optionsHtml += `<option value="${c}">${c} (${district})</option>`;
+    });
+  });
+
+  datalists.forEach(dl => {
+    dl.innerHTML = optionsHtml;
+  });
+}
+
+function renderConstituencyExplorer(name = null) {
+  // Normalize input: empty string or whitespace becomes null
+  const queryName = (typeof name === 'string' && name.trim()) ? name.trim() : null;
+
+  let matchedData = null;
+  let isStateFallback = false;
+
+  if (queryName) {
+    matchedData = getConstituencyData(queryName);
+    if (matchedData) {
+      AppState.activeConstituency = matchedData.name.split(' (')[0] || queryName;
+    }
+  }
+
+  // If no constituency selected OR selected constituency has no representative data:
+  // Priority fallback: Designated KARNATAKA_STATE_LEADER
+  if (!matchedData) {
+    if (typeof KARNATAKA_STATE_LEADER !== 'undefined') {
+      matchedData = KARNATAKA_STATE_LEADER;
+    }
+    isStateFallback = true;
+    AppState.activeConstituency = null;
+  }
+
+  // Ensure Details container is visible and Not Found message is hidden
+  const notFoundEl = document.getElementById('constituency-not-found');
+  const detailsEl = document.getElementById('constituency-details-container');
+  if (notFoundEl) notFoundEl.classList.add('hidden');
+  if (detailsEl) detailsEl.classList.remove('hidden');
+
+  // Sync all search inputs across views to reflect active selection
+  const searchInputs = document.querySelectorAll('input[oninput*="handleConstituencySearch"]');
+  searchInputs.forEach(input => {
+    if (AppState.activeConstituency) {
+      if (input.value !== AppState.activeConstituency) {
+        input.value = AppState.activeConstituency;
+      }
+    } else if (!queryName) {
+      input.value = '';
+    }
+  });
+
+  // Highlight corresponding chip
+  document.querySelectorAll('#constituency-chips .const-chip, #constituency-section button[onclick*="renderConstituencyExplorer"]').forEach(btn => {
+    const btnOnClick = btn.getAttribute('onclick') || '';
+    if (!AppState.activeConstituency) {
+      // Highlight "Karnataka (All)" chip
+      if (btnOnClick.includes('null') || btn.textContent.includes('Karnataka')) {
+        btn.className = 'const-chip px-2.5 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-xs transition-colors';
+      } else {
+        btn.className = 'const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors';
+      }
+    } else {
+      if (btnOnClick.toLowerCase().includes(AppState.activeConstituency.toLowerCase())) {
+        btn.className = 'const-chip px-2.5 py-1 rounded-full text-xs font-bold bg-primary text-white shadow-xs transition-colors';
+      } else {
+        btn.className = 'const-chip px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors';
+      }
+    }
+  });
+
+  // Render Representative Card & Details
   const nameEl = document.getElementById('mla-name');
   const desigEl = document.getElementById('mla-desig');
   const partyEl = document.getElementById('mla-party');
@@ -555,27 +773,73 @@ function renderConstituencyExplorer(name = 'Mysuru') {
   const highEl = document.getElementById('const-high-issues');
   const rateEl = document.getElementById('const-rate-issues');
   const titleEl = document.getElementById('const-stats-title');
+  const contactLabelEl = document.getElementById('const-contact-label');
 
-  if (nameEl) nameEl.innerText = data.mlaName;
-  if (desigEl) desigEl.innerText = data.designation;
-  if (partyEl) partyEl.innerText = data.party;
-  if (photoEl) photoEl.src = data.photo;
-  if (totEl) totEl.innerText = data.totalIssues.toLocaleString();
-  if (highEl) highEl.innerText = data.highPriority;
-  if (rateEl) rateEl.innerText = data.resolvedRate;
-  if (titleEl) titleEl.innerText = `${name} Local Stats`;
+  if (matchedData) {
+    const selectedBadgeEl = document.getElementById('const-selected-badge');
+    if (selectedBadgeEl) {
+      selectedBadgeEl.innerText = isStateFallback ? 'Selected: Karnataka (All State)' : `Selected Constituency: ${matchedData.name || AppState.activeConstituency}`;
+    }
 
-  const wardContainer = document.getElementById('const-ward-list');
-  if (wardContainer && data.wards) {
-    wardContainer.innerHTML = data.wards.map(w => `
-      <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg text-xs">
-        <span class="font-medium text-on-surface truncate pr-2">${w.name}</span>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-error font-semibold">${w.active} active</span>
-          <span class="text-secondary font-semibold">${w.resolved} resolved</span>
+    if (nameEl) nameEl.innerText = matchedData.mlaName;
+    if (desigEl) desigEl.innerText = matchedData.designation;
+    if (partyEl) partyEl.innerText = matchedData.party;
+    if (photoEl) {
+      photoEl.src = matchedData.photo || 'assets/karnataka_govt_logo.svg';
+      photoEl.alt = `${matchedData.mlaName} - ${matchedData.designation}`;
+    }
+    if (totEl) totEl.innerText = (matchedData.totalIssues || 0).toLocaleString();
+    if (highEl) highEl.innerText = (matchedData.highPriority || 0).toLocaleString();
+    if (rateEl) rateEl.innerText = matchedData.resolvedRate || '65%';
+    
+    if (titleEl) {
+      if (isStateFallback) {
+        titleEl.innerText = 'Karnataka Statewide Civic Stats';
+      } else {
+        titleEl.innerText = `${matchedData.name || AppState.activeConstituency} Civic Stats`;
+      }
+    }
+
+    if (contactLabelEl) {
+      contactLabelEl.innerText = isStateFallback ? 'Contact Karnataka State Grievance Cell' : `Contact ${matchedData.district || ''} Grievance Desk`;
+    }
+
+    const wardContainer = document.getElementById('const-ward-list');
+    if (wardContainer && matchedData.wards) {
+      wardContainer.innerHTML = matchedData.wards.map(w => `
+        <div class="flex justify-between items-center p-2.5 bg-surface-container-low rounded-lg text-xs">
+          <span class="font-medium text-on-surface truncate pr-2">${w.name}</span>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="text-error font-semibold">${w.active} active</span>
+            <span class="text-secondary font-semibold">${w.resolved} resolved</span>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+    }
+  }
+
+  // Sync Public Issues List & Map Focus with Selected Constituency
+  renderPublicIssuesList();
+
+  if (AppState.mapInstance) {
+    if (AppState.activeConstituency) {
+      const lower = AppState.activeConstituency.toLowerCase();
+      if (lower.includes('bengaluru') || lower.includes('bangalore')) {
+        AppState.mapInstance.flyTo([12.9165, 77.6101], 13);
+      } else if (lower.includes('malleshwaram')) {
+        AppState.mapInstance.flyTo([12.9982, 77.5714], 14);
+      } else if (lower.includes('hubballi') || lower.includes('dharwad')) {
+        AppState.mapInstance.flyTo([15.3647, 75.1240], 13);
+      } else if (lower.includes('mangaluru') || lower.includes('mangalore')) {
+        AppState.mapInstance.flyTo([12.8797, 74.8560], 13);
+      } else if (lower.includes('belagavi') || lower.includes('belgaum')) {
+        AppState.mapInstance.flyTo([15.8497, 74.5089], 13);
+      } else {
+        AppState.mapInstance.flyTo([12.3051, 76.6432], 13);
+      }
+    } else {
+      AppState.mapInstance.flyTo([12.9716, 77.5946], 8);
+    }
   }
 }
 
@@ -583,21 +847,465 @@ function handleConstituencySearch(query) {
   const notFoundEl = document.getElementById('constituency-not-found');
   const detailsEl = document.getElementById('constituency-details-container');
 
+  // Case: User cleared/emptied the search input -> Return to Karnataka-level leader
   if (!query || !query.trim()) {
     if (notFoundEl) notFoundEl.classList.add('hidden');
     if (detailsEl) detailsEl.classList.remove('hidden');
-    renderConstituencyExplorer('Mysuru');
+    renderConstituencyExplorer(null);
     return;
   }
 
-  const match = Object.keys(CONSTITUENCIES_DATA).find(k => k.toLowerCase().includes(query.toLowerCase().trim()));
-  if (match) {
+  const matched = getConstituencyData(query);
+  if (matched) {
     if (notFoundEl) notFoundEl.classList.add('hidden');
     if (detailsEl) detailsEl.classList.remove('hidden');
-    renderConstituencyExplorer(match);
+    renderConstituencyExplorer(matched.name.split(' (')[0] || query);
   } else {
+    // Search term has no matching constituency in dataset
     if (notFoundEl) notFoundEl.classList.remove('hidden');
     if (detailsEl) detailsEl.classList.add('hidden');
+  }
+}
+
+function clearConstituencySearch() {
+  const searchInputs = document.querySelectorAll('input[oninput*="handleConstituencySearch"]');
+  searchInputs.forEach(input => { input.value = ''; });
+  renderConstituencyExplorer(null);
+}
+
+function contactRepresentativeOffice() {
+  const active = AppState.activeConstituency ? getConstituencyData(AppState.activeConstituency) : null;
+  if (active) {
+    showToast('E-Office Connected', `Opening ${active.mlaName}'s constituent grievances desk (${active.officeLocation})...`, 'success');
+  } else {
+    showToast('State Grievance Portal', 'Connecting to Chief Minister & State Civic Administration Grievance Cell (Vidhana Soudha)...', 'success');
+  }
+}
+
+// ==========================================
+// PUBLIC ISSUES TRANSPARENCY FEED & AI MODAL
+// ==========================================
+
+function renderPublicIssuesList() {
+  const container = document.getElementById('public-issues-grid');
+  if (!container) return;
+
+  const searchQuery = (AppState.publicIssuesSearchQuery || '').toLowerCase().trim();
+  const catFilter = AppState.publicIssuesCategoryFilter || 'all';
+  const statusFilter = AppState.publicIssuesStatusFilter || 'all';
+  const activeConst = AppState.activeConstituency;
+
+  const filtered = AppState.issues.filter(issue => {
+    // Constituency filter if one is selected
+    if (activeConst) {
+      const matchConst = (issue.assembly && issue.assembly.toLowerCase().includes(activeConst.toLowerCase())) ||
+                         (issue.district && issue.district.toLowerCase().includes(activeConst.toLowerCase())) ||
+                         (issue.location && issue.location.toLowerCase().includes(activeConst.toLowerCase()));
+      if (!matchConst) return false;
+    }
+
+    // Category filter
+    if (catFilter !== 'all') {
+      if (catFilter === 'Water' && !issue.category.toLowerCase().includes('water')) return false;
+      else if (catFilter !== 'Water' && issue.category.toLowerCase() !== catFilter.toLowerCase()) return false;
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'New' && issue.status !== 'New') return false;
+      else if (statusFilter === 'Under Review' && issue.status !== 'Under Review') return false;
+      else if (statusFilter === 'Assigned' && issue.status !== 'Assigned') return false;
+      else if (statusFilter === 'Resolved' && issue.status !== 'Resolved') return false;
+    }
+
+    // Search query
+    if (searchQuery) {
+      const haystack = `${issue.title} ${issue.description} ${issue.location} ${issue.ward} ${issue.category} ${issue.district || ''} ${issue.assembly || ''} ${issue.id}`.toLowerCase();
+      if (!haystack.includes(searchQuery)) return false;
+    }
+
+    return true;
+  });
+
+  const counterEl = document.getElementById('issues-result-counter');
+  if (counterEl) {
+    counterEl.innerText = `Showing ${filtered.length} of 1,204 public issues`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-full py-12 px-4 text-center bg-surface-container-low rounded-2xl border border-outline-variant">
+        <div class="w-14 h-14 rounded-2xl bg-surface-container-high text-on-surface-variant flex items-center justify-center mx-auto mb-3">
+          <span class="material-symbols-outlined text-3xl">search_off</span>
+        </div>
+        <h3 class="font-bold text-base text-on-surface mb-1">No Matching Public Issues Found</h3>
+        <p class="text-xs text-on-surface-variant max-w-md mx-auto mb-4">Try clearing filters or search terms to see all reported community incidents across Karnataka.</p>
+        <button onclick="resetPublicIssuesFilters()" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-xs hover:opacity-95 transition-all">
+          Reset All Filters
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(issue => {
+    const isResolved = issue.status === 'Resolved';
+    const isHigh = issue.priority === 'HIGH';
+    const isMed = issue.priority === 'MED';
+
+    const prioBadgeClass = isHigh ? 'bg-error/10 text-error border-error/30' :
+                           isMed ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' :
+                           'bg-slate-500/10 text-slate-600 border-slate-500/30';
+
+    const statusBadgeClass = isResolved ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' :
+                             issue.status === 'Assigned' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30' :
+                             issue.status === 'Under Review' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30' :
+                             'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30';
+
+    const catIcon = issue.category.toLowerCase().includes('sanit') ? 'delete' :
+                    issue.category.toLowerCase().includes('road') ? 'traffic' :
+                    issue.category.toLowerCase().includes('water') ? 'water_drop' :
+                    issue.category.toLowerCase().includes('elect') ? 'bolt' : 'report';
+
+    const imgUrl = (issue.images && issue.images[0]) ? issue.images[0] : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA';
+
+    const statusStep = issue.status === 'Resolved' ? 4 :
+                       issue.status === 'In Progress' ? 3 :
+                       issue.status === 'Assigned' ? 2 : 1;
+
+    const step1Bg = statusStep >= 1 ? 'bg-primary' : 'bg-outline-variant/40';
+    const step2Bg = statusStep >= 2 ? 'bg-primary' : 'bg-outline-variant/40';
+    const step3Bg = statusStep >= 3 ? 'bg-primary' : 'bg-outline-variant/40';
+    const step4Bg = statusStep >= 4 ? 'bg-secondary' : 'bg-outline-variant/40';
+
+    const t = I18N[AppState.currentLang] || I18N.en;
+
+    return `
+      <article class="bg-surface rounded-2xl border border-outline-variant/70 level-1-shadow overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300">
+        <!-- Card Image Header -->
+        <div class="relative h-44 w-full bg-surface-container overflow-hidden">
+          <img src="${imgUrl}" alt="${issue.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          
+          <!-- Top Badges -->
+          <div class="absolute top-3 left-3 right-3 flex justify-between items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider backdrop-blur-md bg-surface/90 text-on-surface border border-outline-variant/60 flex items-center gap-1 shadow-xs">
+              <span class="material-symbols-outlined text-[14px] text-primary">${catIcon}</span>
+              <span>${issue.category}</span>
+            </span>
+
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider backdrop-blur-md border ${prioBadgeClass} shadow-xs">
+              ${issue.priority} Priority
+            </span>
+          </div>
+
+          <!-- Bottom Image Overlay ID & Status -->
+          <div class="absolute bottom-2.5 left-3 right-3 flex justify-between items-center text-white text-xs">
+            <span class="font-mono font-bold bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm">#${issue.id}</span>
+            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold backdrop-blur-md border ${statusBadgeClass} bg-surface/90">
+              ● ${issue.status}
+            </span>
+          </div>
+        </div>
+
+        <!-- Card Content Body -->
+        <div class="p-4 sm:p-5 flex flex-col flex-grow justify-between gap-3">
+          <div>
+            <h3 class="font-headline-md text-base font-bold text-on-surface line-clamp-2 leading-snug mb-1.5 group-hover:text-primary transition-colors">
+              ${issue.title}
+            </h3>
+            
+            <p class="text-xs text-on-surface-variant flex items-center gap-1 mb-2.5">
+              <span class="material-symbols-outlined text-[15px] text-secondary shrink-0">location_on</span>
+              <span class="truncate font-medium">${issue.location} • ${issue.ward || ''}</span>
+            </p>
+
+            <!-- Mock AI Analysis Triage Box -->
+            <div class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/60 text-xs space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-primary flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                  <span class="material-symbols-outlined text-[14px]">auto_awesome</span> AI Vision Diagnosis
+                </span>
+                <span class="text-[10px] font-semibold text-on-surface-variant">${issue.reportedAt}</span>
+              </div>
+              <p class="text-[11px] text-on-surface leading-relaxed line-clamp-2 italic">
+                "${issue.aiSummary || issue.description}"
+              </p>
+            </div>
+
+            <!-- Visual Status Progress Bar: Reported → Assigned → In Progress → Resolved -->
+            <div class="mt-3 pt-2 border-t border-outline-variant/60">
+              <div class="flex items-center justify-between text-[10px] font-bold text-on-surface-variant mb-1">
+                <span>Progress Tracker</span>
+                <span class="text-primary font-semibold">${t['status' + (issue.status === 'New' ? 'Reported' : issue.status.replace(/\s+/g, ''))] || issue.status}</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1">
+                <div class="h-1.5 rounded-full ${step1Bg}"></div>
+                <div class="h-1.5 rounded-full ${step2Bg}"></div>
+                <div class="h-1.5 rounded-full ${step3Bg}"></div>
+                <div class="h-1.5 rounded-full ${step4Bg}"></div>
+              </div>
+              <div class="flex justify-between text-[9px] font-medium text-on-surface-variant/70 mt-1">
+                <span>${t.statusFlowReported || 'Reported'}</span>
+                <span>${t.statusFlowAssigned || 'Assigned'}</span>
+                <span>${t.statusFlowProgress || 'In Progress'}</span>
+                <span>${t.statusFlowResolved || 'Resolved'}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Actions Footer -->
+          <div class="pt-2.5 border-t border-outline-variant/60 flex items-center justify-between gap-2">
+            <!-- Upvote Button -->
+            <button onclick="togglePublicIssueUpvote('${issue.id}', event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-secondary/10 hover:text-secondary text-on-surface text-xs font-bold transition-all" title="Support this civic report">
+              <span class="material-symbols-outlined text-[16px] text-secondary">thumb_up</span>
+              <span>${issue.upvotes || 0}</span>
+            </button>
+
+            <!-- View Details Button -->
+            <button onclick="openPublicIssueDetailModal('${issue.id}')" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs shadow-xs transition-all">
+              <span data-i18n="viewDetails">View Details</span>
+              <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+function filterPublicIssues(type, val) {
+  if (type === 'cat') {
+    AppState.publicIssuesCategoryFilter = val;
+    document.querySelectorAll('#public-issue-cat-filters .issue-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-filter-val') === val) {
+        btn.className = 'issue-filter-btn px-3 py-1.5 rounded-full text-xs font-bold bg-primary text-white shadow-xs transition-colors';
+      } else {
+        btn.className = 'issue-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-surface-container-high hover:bg-primary-fixed hover:text-primary transition-colors text-on-surface';
+      }
+    });
+  } else if (type === 'status') {
+    AppState.publicIssuesStatusFilter = val;
+    document.querySelectorAll('#public-issue-status-filters .status-filter-btn').forEach(btn => {
+      if (btn.getAttribute('data-filter-val') === val) {
+        btn.className = 'status-filter-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/30';
+      } else {
+        btn.className = 'status-filter-btn px-2.5 py-1 rounded-lg text-xs font-medium text-on-surface-variant hover:bg-surface-container-high';
+      }
+    });
+  }
+  renderPublicIssuesList();
+}
+
+function handlePublicIssuesSearch(query) {
+  AppState.publicIssuesSearchQuery = query;
+  renderPublicIssuesList();
+}
+
+function resetPublicIssuesFilters() {
+  AppState.publicIssuesSearchQuery = '';
+  AppState.publicIssuesCategoryFilter = 'all';
+  AppState.publicIssuesStatusFilter = 'all';
+  AppState.activeConstituency = null;
+  const searchInput = document.getElementById('public-issues-search');
+  if (searchInput) searchInput.value = '';
+  filterPublicIssues('cat', 'all');
+  filterPublicIssues('status', 'all');
+  renderConstituencyExplorer(null);
+}
+
+function togglePublicIssueUpvote(issueId, event) {
+  if (event) event.stopPropagation();
+  const issue = AppState.issues.find(i => i.id === issueId);
+  if (!issue) return;
+
+  issue.upvotes = (issue.upvotes || 0) + 1;
+  saveIssuesData();
+  renderPublicIssuesList();
+  if (AppState.currentUser) {
+    AppState.currentUser.upvotesCount = (AppState.currentUser.upvotesCount || 0) + 1;
+    saveAuthUser();
+  }
+  showToast('Civic Support Registered', `You supported report #${issue.id}. Priorities escalated for high-support incidents.`, 'success');
+}
+
+function openPublicIssueDetailModal(issueId) {
+  const issue = AppState.issues.find(i => i.id === issueId) || AppState.issues[0];
+  if (!issue) return;
+
+  let modal = document.getElementById('public-issue-detail-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'public-issue-detail-modal';
+    modal.className = 'fixed inset-0 z-[120] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 hidden opacity-0 transition-opacity duration-300';
+    document.body.appendChild(modal);
+  }
+
+  const isResolved = issue.status === 'Resolved';
+  const isHigh = issue.priority === 'HIGH';
+  const isMed = issue.priority === 'MED';
+
+  const prioBadgeClass = isHigh ? 'bg-error/10 text-error border-error/30' :
+                         isMed ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' :
+                         'bg-slate-500/10 text-slate-600 border-slate-500/30';
+
+  const statusBadgeClass = isResolved ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' :
+                           issue.status === 'Assigned' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30' :
+                           issue.status === 'Under Review' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30' :
+                           'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30';
+
+  const imgUrl = (issue.images && issue.images[0]) ? issue.images[0] : '';
+  const objList = (issue.detectedObjects || []).join(', ') || 'Public infrastructure obstruction';
+
+  modal.innerHTML = `
+    <div id="public-issue-detail-card" class="bg-surface rounded-2xl border border-outline-variant level-3-shadow max-w-2xl w-full p-6 relative max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+      <!-- Close Button -->
+      <button onclick="closePublicIssueDetailModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high z-20">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+
+      <!-- Modal Header -->
+      <div class="flex items-center gap-2 mb-2">
+        <span class="font-mono text-xs font-bold px-2 py-0.5 bg-primary/10 text-primary rounded-md">#${issue.id}</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-black uppercase tracking-wider border ${prioBadgeClass}">${issue.priority} Priority</span>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold border ${statusBadgeClass}">● ${issue.status}</span>
+      </div>
+
+      <h2 class="text-xl md:text-2xl font-black text-on-surface leading-snug mb-2">${issue.title}</h2>
+      
+      <!-- Location & Reporter Protection -->
+      <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-on-surface-variant mb-4">
+        <span class="flex items-center gap-1">
+          <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+          <span>${issue.location} • ${issue.ward || ''} (${issue.district || 'Karnataka'})</span>
+        </span>
+        <span class="flex items-center gap-1 text-secondary font-semibold">
+          <span class="material-symbols-outlined text-[16px]">verified_user</span>
+          <span>Protected by JanSetu Shield</span>
+        </span>
+        <span class="text-on-surface-variant/70">${issue.reportedAt || 'Recent'}</span>
+      </div>
+
+      <!-- Photo Evidence with clean rounded frame -->
+      ${imgUrl ? `
+        <div class="w-full h-56 rounded-xl overflow-hidden border border-outline-variant mb-5 bg-black/5 relative group">
+          <img src="${imgUrl}" alt="${issue.title}" class="w-full h-full object-cover" />
+          <div class="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg text-white text-[11px] font-semibold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[14px]">photo_camera</span> Verified Field Photograph
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Description -->
+      <div class="mb-5">
+        <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1.5">Citizen Incident Description</h4>
+        <p class="text-sm text-on-surface bg-surface-container-low p-3.5 rounded-xl border border-outline-variant leading-relaxed">
+          ${issue.description}
+        </p>
+      </div>
+
+      <!-- AI ANALYSIS BENTO (Mock Realistic Fields) -->
+      <div class="mb-5 p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border-2 border-primary/20 space-y-3">
+        <div class="flex items-center justify-between border-b border-primary/20 pb-2">
+          <div class="flex items-center gap-1.5 text-primary font-bold text-xs uppercase tracking-wider">
+            <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+            <span>AI Multimodal Analysis & Triage</span>
+          </div>
+          <span class="text-[11px] font-semibold text-secondary px-2 py-0.5 bg-secondary/10 rounded-full border border-secondary/20">Automated Triage Complete</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+          <div class="bg-surface p-2.5 rounded-xl border border-outline-variant">
+            <span class="text-on-surface-variant font-medium block text-[11px]">Issue Category</span>
+            <span class="font-bold text-on-surface text-sm">${issue.category}</span>
+          </div>
+          <div class="bg-surface p-2.5 rounded-xl border border-outline-variant">
+            <span class="text-on-surface-variant font-medium block text-[11px]">Assessed Priority</span>
+            <span class="font-bold ${isHigh ? 'text-error' : 'text-amber-600'} text-sm">${issue.priority} Hazard</span>
+          </div>
+          <div class="col-span-full bg-surface p-2.5 rounded-xl border border-outline-variant">
+            <span class="text-on-surface-variant font-medium block text-[11px]">Recommended Authority</span>
+            <span class="font-bold text-primary text-xs">${issue.recommendedAuthority || 'Local Municipal Corporation (MCC / BBMP)'}</span>
+          </div>
+          <div class="col-span-full bg-surface p-2.5 rounded-xl border border-outline-variant">
+            <span class="text-on-surface-variant font-medium block text-[11px]">Suggested Field Action</span>
+            <span class="font-semibold text-on-surface text-xs">${issue.suggestedAction || 'Inspection and routine clearance'}</span>
+          </div>
+          <div class="col-span-full bg-surface p-2.5 rounded-xl border border-outline-variant">
+            <span class="text-on-surface-variant font-medium block text-[11px]">Detected Objects / Visual Elements</span>
+            <span class="text-on-surface-variant text-xs">${objList}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Resolution Progress Pipeline -->
+      <div class="mb-5">
+        <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-2.5">Resolution Progress Pipeline</h4>
+        <div class="grid grid-cols-4 gap-2 text-center text-[11px]">
+          <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">check_circle</span>
+            <span>1. Reported</span>
+          </div>
+          <div class="p-2 rounded-lg ${issue.status !== 'New' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">${issue.status !== 'New' ? 'check_circle' : 'hourglass_empty'}</span>
+            <span>2. Under Review</span>
+          </div>
+          <div class="p-2 rounded-lg ${issue.status === 'Assigned' || issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">${issue.status === 'Assigned' || issue.status === 'Resolved' ? 'check_circle' : 'pending'}</span>
+            <span>3. Assigned</span>
+          </div>
+          <div class="p-2 rounded-lg ${issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">${issue.status === 'Resolved' ? 'verified' : 'flag'}</span>
+            <span>4. Resolved</span>
+          </div>
+        </div>
+        ${issue.resolutionProof ? `
+          <div class="mt-2 p-2.5 bg-secondary/10 border border-secondary/20 rounded-xl text-xs text-secondary font-medium">
+            <strong>Official Resolution Note:</strong> ${issue.resolutionProof}
+          </div>
+        ` : ''}
+      </div>
+
+      <!-- Action Footer -->
+      <div class="pt-4 border-t border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-3">
+        <button onclick="togglePublicIssueUpvote('${issue.id}', event)" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-secondary/10 hover:text-secondary text-on-surface text-xs font-bold transition-all flex items-center justify-center gap-1.5">
+          <span class="material-symbols-outlined text-[18px] text-secondary">thumb_up</span>
+          <span>Support Report (${issue.upvotes || 0})</span>
+        </button>
+
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <button onclick="closePublicIssueDetailModal(); switchView('report');" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface border border-outline-variant hover:bg-surface-container-high text-xs font-bold text-on-surface transition-all">
+            Report Related Issue
+          </button>
+          <button onclick="closePublicIssueDetailModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-bold shadow-xs transition-all">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    const card = document.getElementById('public-issue-detail-card');
+    if (card) {
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+  }, 10);
+}
+
+function closePublicIssueDetailModal() {
+  const modal = document.getElementById('public-issue-detail-modal');
+  const card = document.getElementById('public-issue-detail-card');
+  if (modal && card) {
+    modal.classList.add('opacity-0');
+    card.classList.remove('scale-100');
+    card.classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
   }
 }
 
@@ -1549,11 +2257,9 @@ function renderHumanRightsMarquee() {
   const itemsHtml = HUMAN_RIGHTS_DATA.map(item => `
     <div class="human-right-item">
       <span class="human-right-pill">
-        <strong class="font-bold text-on-surface tracking-wide uppercase text-xs">${item.en}</strong>
-        <span class="text-primary/70 font-bold">/</span>
-        <span class="font-semibold text-primary font-kannada text-xs">${item.kn}</span>
+        <strong class="font-bold text-on-surface tracking-wider uppercase text-xs">${item}</strong>
       </span>
-      <span class="text-secondary/70 text-xs select-none">✦</span>
+      <span class="text-primary/50 text-xs select-none">✦</span>
     </div>
   `).join('');
 
@@ -1564,10 +2270,15 @@ function renderHumanRightsMarquee() {
 // Global Init on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
+  initLanguage();
   initIssuesData();
   initAuth();
   initAuthorityAuth();
+  populateConstituencyDatalist();
   renderHumanRightsMarquee();
+  if (document.getElementById('public-issues-grid')) {
+    renderPublicIssuesList();
+  }
 
   // Global Keyboard Accessibility (Esc to close modals)
   document.addEventListener('keydown', (e) => {

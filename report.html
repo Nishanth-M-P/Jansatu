@@ -94,12 +94,6 @@
           <span class="theme-toggle-text hidden sm:inline whitespace-nowrap">Dark</span>
         </button>
 
-        <!-- Language Switcher -->
-        <button id="lang-toggle-btn" onclick="toggleLanguage()" title="Toggle English/Kannada" class="h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap">
-          <span class="material-symbols-outlined text-[16px] text-primary">translate</span>
-          <span class="whitespace-nowrap">English/ಕನ್ನಡ</span>
-        </button>
-
         <a href="authority.html" class="hidden md:inline-flex h-9 px-3.5 rounded-full border border-primary text-primary hover:bg-primary hover:text-white transition-all font-semibold text-xs items-center justify-center gap-1.5 shadow-xs bg-surface shrink-0 whitespace-nowrap">
           <span class="material-symbols-outlined text-[16px]">shield_person</span>
           <span data-i18n="btnAuthority" class="whitespace-nowrap">Authority Portal</span>
@@ -246,42 +240,46 @@
             <div class="grid grid-cols-2 gap-sm">
               <div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
                 <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
-                  <span class="material-symbols-outlined text-[16px]">category</span> Category
+                  <span class="material-symbols-outlined text-[16px]">category</span> Issue Category
                 </span>
-                <span id="ai-cat-val" class="font-label-md text-label-md text-on-surface font-bold text-base">Sanitation</span>
+                <span id="ai-cat-val" class="font-label-md text-label-md text-on-surface font-bold text-sm">Sanitation</span>
               </div>
 
               <div class="bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
                 <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
-                  <span class="material-symbols-outlined text-[16px]">warning</span> Severity
+                  <span class="material-symbols-outlined text-[16px]">warning</span> Priority Score
                 </span>
                 <div id="ai-sev-val" class="flex items-center gap-xs">
-                  <span class="w-3 h-3 rounded-full bg-error"></span>
-                  <span class="font-label-md text-label-md text-error font-bold">High</span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-error"></span>
+                  <span class="font-label-md text-label-md text-error font-bold text-sm">High Priority</span>
                 </div>
               </div>
 
               <div class="col-span-2 bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
                 <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
-                  <span class="material-symbols-outlined text-[16px]">troubleshoot</span> Detected Objects
+                  <span class="material-symbols-outlined text-[16px]">account_balance</span> Recommended Authority
                 </span>
-                <span id="ai-obj-val" class="font-body-md text-xs text-on-surface font-medium">Garbage bags, Public Road, Waste accumulation</span>
+                <span id="ai-auth-val" class="font-body-md text-xs text-primary font-bold">MCC Health & Sanitation Division</span>
               </div>
 
               <div class="col-span-2 bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
-                <div class="flex justify-between items-center">
-                  <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">AI Confidence</span>
-                  <span id="ai-conf-val" class="font-label-sm text-label-sm text-primary font-black">94%</span>
-                </div>
-                <div class="w-full bg-surface-variant rounded-full h-1.5 mt-1">
-                  <div id="ai-conf-bar" class="bg-primary h-1.5 rounded-full" style="width: 94%"></div>
-                </div>
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[16px]">build_circle</span> Suggested Municipal Action
+                </span>
+                <span id="ai-action-val" class="font-body-md text-xs text-on-surface font-semibold">Emergency solid waste clearance & sanitization sweep</span>
+              </div>
+
+              <div class="col-span-2 bg-surface-container-low p-sm rounded-xl border border-outline-variant flex flex-col gap-xs">
+                <span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 font-medium">
+                  <span class="material-symbols-outlined text-[16px]">troubleshoot</span> Detected Key Objects
+                </span>
+                <span id="ai-obj-val" class="font-body-md text-xs text-on-surface-variant font-medium">Garbage bags, Solid waste, Public Road, School perimeter</span>
               </div>
             </div>
 
             <div class="mt-sm pt-sm border-t border-outline-variant flex flex-col gap-sm">
-              <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold">AI Recommended Draft</span>
-              <div id="ai-draft-box" class="bg-surface-container-low p-md rounded-xl border border-outline-variant font-body-md text-sm text-on-surface italic relative leading-relaxed">
+              <span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider font-bold">AI Recommended Civic Draft</span>
+              <div id="ai-draft-box" class="bg-surface-container-low p-md rounded-xl border border-outline-variant font-body-md text-xs text-on-surface italic relative leading-relaxed">
                 "Garbage has accumulated near the government school, creating an unhygienic environment and health hazard for students. Immediate cleanup required."
               </div>
             </div>
