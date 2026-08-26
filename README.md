@@ -101,6 +101,7 @@ Jansatu/
 ## 👥 Authors
 - **JanSetu AI Team**
 - GitHub: [@Nishanth-M-P](https://github.com/Nishanth-M-P)
+- GitHub: [@Darshan-Divakar-Naik](https://github.com/darshandivakarnaik28)
 
 ---
 *© 2026 JanSetu AI. Built for Karnataka Civic Accountability.*
