@@ -131,20 +131,36 @@
       </a>
 
       <!-- Desktop Navigation Links -->
-      <nav class="hidden lg:flex gap-4 xl:gap-6 items-center h-full whitespace-nowrap flex-nowrap shrink-0">
-        <button onclick="switchView('report')" data-nav-target="report" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1.5 whitespace-nowrap shrink-0" data-i18n="btnReport">
-          Report a Problem
+      <nav class="hidden lg:flex gap-3 xl:gap-5 items-center h-full whitespace-nowrap flex-nowrap shrink-0">
+        <button onclick="switchView('home')" data-nav-target="home" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0">
+          Home
         </button>
-        <button onclick="switchView('dashboard')" data-nav-target="dashboard" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1.5 whitespace-nowrap shrink-0" data-i18n="btnExplore">
-          Public Issues
+        <button onclick="switchView('report')" data-nav-target="report" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0" data-i18n="btnReport">
+          Report Issue
         </button>
-        <button onclick="switchView('dashboard'); setTimeout(() => document.getElementById('constituency-section')?.scrollIntoView({behavior:'smooth'}), 200);" data-nav-target="constituency" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1.5 whitespace-nowrap shrink-0" data-i18n="btnConstituency">
-          Constituency Explorer
+        <button onclick="switchView('track')" data-nav-target="track" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0">
+          Track Report
+        </button>
+        <button onclick="switchView('dashboard')" data-nav-target="dashboard" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0" data-i18n="btnExplore">
+          Explore Karnataka
+        </button>
+        <button onclick="switchView('dashboard'); setTimeout(() => document.getElementById('constituency-section')?.scrollIntoView({behavior:'smooth'}), 200);" data-nav-target="constituency" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0" data-i18n="btnConstituency">
+          My Constituency
+        </button>
+        <button onclick="switchView('rights')" data-nav-target="rights" class="nav-link text-on-surface-variant font-label-md text-xs xl:text-sm hover:text-primary transition-all flex items-center h-full px-1 whitespace-nowrap shrink-0">
+          Know Your Rights
         </button>
       </nav>
 
       <!-- Trailing Action Controls -->
       <div class="flex items-center gap-1.5 sm:gap-2 lg:gap-2.5 shrink-0 flex-nowrap">
+        <!-- Language Switcher Button -->
+        <button onclick="toggleLanguage()" id="lang-toggle-btn" class="h-9 px-3 rounded-full border border-primary/30 bg-primary/5 hover:bg-primary/10 text-xs font-bold text-primary flex items-center gap-1 transition-colors shadow-xs shrink-0 whitespace-nowrap" title="Switch Language (English / Kannada)">
+          <span class="material-symbols-outlined text-[16px]">language</span>
+          <span id="lang-toggle-text">English | ಕನ್ನಡ</span>
+        </button>
+
+        <!-- Dark Mode Toggle Button -->
         <!-- Dark Mode Toggle Button -->
         <button onclick="toggleDarkMode()" class="theme-toggle-btn h-9 px-3 rounded-full border border-outline-variant bg-surface hover:bg-surface-container-high text-xs font-semibold text-on-surface flex items-center gap-1.5 transition-colors shadow-xs shrink-0 whitespace-nowrap" title="Toggle Dark/Light Mode">
           <span class="theme-toggle-icon material-symbols-outlined text-[16px] text-amber-500">dark_mode</span>
@@ -1582,6 +1598,128 @@
           <span class="font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-secondary text-[18px]">verified</span> Verified Field Photograph Evidence</span>
           <span class="text-on-surface-variant font-mono">JanSetu Multimodal Vision Core</span>
         </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= VIEW 5: DEDICATED TRACK REPORT VIEW ================= -->
+  <main data-view="track" class="hidden flex-grow w-full px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto py-8 flex flex-col gap-xl">
+    <div class="max-w-3xl mx-auto w-full space-y-6">
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs">
+          <span class="material-symbols-outlined text-[16px]">find_in_page</span> Live Report Tracker
+        </div>
+        <h1 class="font-headline-lg text-3xl font-black text-on-surface">Track Your Report</h1>
+        <p class="text-xs text-on-surface-variant max-w-lg mx-auto">Enter your unique JanSetu Tracking ID to view real-time AI classification, authority assignment, and field resolution proof.</p>
+      </div>
+
+      <!-- Search Input Card -->
+      <div class="bg-surface p-4 rounded-2xl border border-outline-variant level-2-shadow flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+          <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+          <input id="track-report-input" type="text" placeholder="Enter JanSetu ID (e.g. JS-KA-2026-004821)" class="w-full h-12 pl-10 pr-4 bg-surface-container-low border border-outline-variant rounded-xl text-sm font-mono font-bold focus:ring-2 focus:ring-primary outline-none transition-all" value="JS-KA-2026-004821" />
+        </div>
+        <button onclick="renderTrackReportView(document.getElementById('track-report-input').value)" class="h-12 px-6 bg-primary text-white font-bold text-sm rounded-xl hover:opacity-95 transition-opacity shadow-md flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">travel_explore</span> Track Status
+        </button>
+      </div>
+
+      <!-- Track Result Timeline Container -->
+      <div id="track-report-result">
+        <!-- Dynamically rendered via renderTrackReportView() -->
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= VIEW 6: KNOW YOUR RIGHTS EDUCATIONAL GUIDE ================= -->
+  <main data-view="rights" class="hidden flex-grow w-full px-margin-mobile md:px-margin-desktop max-w-max-width mx-auto py-8 flex flex-col gap-xl">
+    <div class="space-y-6">
+      <div class="border-b border-outline-variant pb-4">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/10 text-secondary font-bold text-xs mb-2">
+          <span class="material-symbols-outlined text-[16px]">balance</span> Citizen Empowerment
+        </div>
+        <h1 class="font-headline-lg text-3xl font-black text-on-surface">Know Your Rights</h1>
+        <p class="text-xs text-on-surface-variant mt-1">Fundamental constitutional rights and public service guarantees for Karnataka citizens.</p>
+      </div>
+
+      <!-- Rights Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Card 1: Anti-Corruption -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-error/10 text-error flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">gavel</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Anti-Corruption & Transparency</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Citizens should not be required to make unlawful payments to access public services. Report bribery or official extortion safely with Privacy Shield protection.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('report')">
+            Report Issue <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Right to Information -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">description</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Right to Information (RTI)</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Every citizen has the legal right to request government records, municipal expenditure logs, and infrastructure project allocation data under RTI 2005.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('dashboard')">
+            Explore Data <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Public Services Guarantee -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">verified</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Public Services Delivery</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Under Sakala (Karnataka Guarantee of Services to Citizens Act), civic services such as clean water, road maintenance, and waste clearance must meet time-bound SLA timelines.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('report')">
+            Submit Grievance <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Right to Clean Environment -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">eco</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Right to Clean Environment</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Article 21 guarantees the right to a clean, unpolluted environment including solid waste clearance, safe drainage, and unblocked footpaths.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('report')">
+            Report Sanitation <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- Card 5: Public Grievance Redressal -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">campaign</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Public Grievances Desk</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">Municipal authorities are legally mandated to review, assign, and respond to public safety hazards within established municipal timelines.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('track')">
+            Track Status <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+
+        <!-- Card 6: Whistleblower Privacy -->
+        <div class="bg-surface rounded-2xl border border-outline-variant p-6 level-2-shadow space-y-3">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-[22px]">security</span>
+          </div>
+          <h3 class="font-bold text-lg text-on-surface">Citizen Privacy & Identity Shield</h3>
+          <p class="text-xs text-on-surface-variant leading-relaxed">JanSetu Privacy Shield safeguards civic whistleblowers, masking identity from public feeds while maintaining verified municipal routing.</p>
+          <div class="pt-2 text-xs font-bold text-primary flex items-center gap-1 cursor-pointer" onclick="switchView('report')">
+            Protected Report <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legal Disclaimer Footnote -->
+      <div class="p-4 bg-surface-container-low rounded-xl border border-outline-variant text-xs text-on-surface-variant leading-relaxed italic">
+        <strong>Disclaimer:</strong> The rights overview above is provided for civic education and public awareness under the Indian Constitution and Karnataka state legislations. It does not constitute formal legal counsel.
       </div>
     </div>
   </main>

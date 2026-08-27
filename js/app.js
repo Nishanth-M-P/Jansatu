@@ -168,9 +168,140 @@ function switchView(viewName) {
     renderAuthorityPortal();
   } else if (viewName === 'report') {
     setReportStep(1);
+  } else if (viewName === 'track') {
+    renderTrackReportView();
+  } else if (viewName === 'rights') {
+    // Rights view setup if needed
+  } else if (viewName === 'constituency') {
+    setTimeout(() => {
+      switchView('dashboard');
+      document.getElementById('constituency-section')?.scrollIntoView({ behavior: 'smooth' });
+    }, 50);
+    return;
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderTrackReportView(searchId = null) {
+  const targetId = searchId || AppState.trackReportQuery || 'JS-KA-2026-004821';
+  AppState.trackReportQuery = targetId;
+
+  const trackInput = document.getElementById('track-report-input');
+  if (trackInput && targetId) trackInput.value = targetId;
+
+  const issue = AppState.issues.find(i => i.id.toLowerCase() === targetId.toLowerCase()) || 
+                AppState.issues.find(i => i.id === 'JS-KA-2026-004821') || 
+                AppState.issues[0];
+
+  const resultContainer = document.getElementById('track-report-result');
+  if (!resultContainer) return;
+
+  if (!issue) {
+    resultContainer.innerHTML = `
+      <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-outline-variant">
+        <span class="material-symbols-outlined text-4xl text-primary opacity-50 mb-2">find_in_page</span>
+        <h3 class="font-bold text-base text-on-surface">No Report Found for "${targetId}"</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Please verify the JanSetu ID (e.g. JS-KA-2026-004821) and try again.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const normStatus = (issue.status === 'New') ? 'Reported' : issue.status;
+  const isAssigned = normStatus === 'Assigned' || normStatus === 'In Progress' || normStatus === 'Under Review' || normStatus === 'Resolved';
+  const isInProgress = normStatus === 'In Progress' || normStatus === 'Under Review' || normStatus === 'Resolved';
+  const isActionTaken = normStatus === 'In Progress' || normStatus === 'Resolved';
+  const isResolved = normStatus === 'Resolved';
+
+  const statusBadge = isResolved ?
+    '<span class="px-3 py-1 bg-secondary/10 text-secondary border border-secondary/30 rounded-full font-bold text-xs">🟢 Resolved</span>' :
+    isInProgress ?
+    '<span class="px-3 py-1 bg-amber-500/10 text-amber-600 border border-amber-500/30 rounded-full font-bold text-xs">🟡 Under Review / In Progress</span>' :
+    '<span class="px-3 py-1 bg-primary/10 text-primary border border-primary/30 rounded-full font-bold text-xs">🟠 Pending Verification</span>';
+
+  resultContainer.innerHTML = `
+    <div class="bg-surface rounded-2xl border border-outline-variant p-6 space-y-6 level-2-shadow">
+      <!-- Report Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-outline-variant pb-4">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-sm text-primary px-2.5 py-0.5 bg-primary/10 rounded-md">#${issue.id}</span>
+            ${statusBadge}
+          </div>
+          <h2 class="text-xl font-black text-on-surface mt-2">${issue.title}</h2>
+          <p class="text-xs text-on-surface-variant flex items-center gap-1 mt-1">
+            <span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+            ${issue.location} • ${issue.ward || ''} (${issue.district || 'Karnataka'})
+          </p>
+        </div>
+        <div class="text-right sm:self-start">
+          <div class="text-[11px] text-on-surface-variant font-medium">Submitted Date</div>
+          <div class="text-xs font-bold text-on-surface">${issue.date || '2026-08-27'}</div>
+        </div>
+      </div>
+
+      <!-- Timeline Progress -->
+      <div>
+        <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4">Official Status Timeline</h4>
+        
+        <div class="relative pl-6 space-y-6 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant">
+          <!-- Step 1: Submitted -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-secondary text-white flex items-center justify-center text-[10px]">✓</div>
+            <div class="font-bold text-xs text-on-surface">Report Submitted</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">Incident registered with JanSetu Privacy Shield.</div>
+            <div class="text-[10px] text-on-surface-variant/70 font-mono mt-0.5">${issue.date || '2026-08-27'} • Logged</div>
+          </div>
+
+          <!-- Step 2: AI Analysis -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full bg-secondary text-white flex items-center justify-center text-[10px]">✓</div>
+            <div class="font-bold text-xs text-on-surface">AI Multimodal Analysis Completed</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">Categorized as <strong class="text-primary">${issue.category}</strong> (${issue.priority} Priority, ${issue.aiConfidence || 94}% AI Confidence).</div>
+            <div class="text-[10px] text-on-surface-variant/70 font-mono mt-0.5">Automated Triage</div>
+          </div>
+
+          <!-- Step 3: Authority Assigned -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full ${isAssigned ? 'bg-secondary text-white' : 'bg-surface-container-high text-on-surface-variant'} flex items-center justify-center text-[10px]">${isAssigned ? '✓' : '○'}</div>
+            <div class="font-bold text-xs ${isAssigned ? 'text-on-surface' : 'text-on-surface-variant/70'}">Authority Assigned</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">${issue.assignedTo ? `Assigned to ${issue.assignedTo}` : `Routed to ${issue.recommendedAuthority || 'Local Municipal Corporation'}`}</div>
+          </div>
+
+          <!-- Step 4: Under Review / In Progress -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full ${isInProgress ? (isResolved ? 'bg-secondary text-white' : 'bg-amber-500 text-white animate-pulse') : 'bg-surface-container-high text-on-surface-variant'} flex items-center justify-center text-[10px]">${isInProgress ? (isResolved ? '✓' : '●') : '○'}</div>
+            <div class="font-bold text-xs ${isInProgress ? 'text-on-surface' : 'text-on-surface-variant/70'}">Under Review / Field Operations</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">${isInProgress ? 'Municipal field squad deployed on site.' : 'Awaiting officer dispatch.'}</div>
+          </div>
+
+          <!-- Step 5: Action Taken -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full ${isActionTaken ? (isResolved ? 'bg-secondary text-white' : 'bg-amber-500 text-white') : 'bg-surface-container-high text-on-surface-variant'} flex items-center justify-center text-[10px]">${isActionTaken ? (isResolved ? '✓' : '●') : '○'}</div>
+            <div class="font-bold text-xs ${isActionTaken ? 'text-on-surface' : 'text-on-surface-variant/70'}">Action Taken</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">${issue.suggestedAction || 'Field repair & clearance under execution.'}</div>
+          </div>
+
+          <!-- Step 6: Resolved -->
+          <div class="relative">
+            <div class="absolute -left-6 top-0 w-4 h-4 rounded-full ${isResolved ? 'bg-secondary text-white' : 'bg-surface-container-high text-on-surface-variant'} flex items-center justify-center text-[10px]">${isResolved ? '✓' : '○'}</div>
+            <div class="font-bold text-xs ${isResolved ? 'text-secondary font-black' : 'text-on-surface-variant/70'}">Resolved</div>
+            <div class="text-[11px] text-on-surface-variant mt-0.5">${isResolved ? (issue.resolutionProof || 'Official verification complete. Incident closed.') : 'Verification pending.'}</div>
+          </div>
+        </div>
+      </div>
+
+      ${isResolved && issue.resolutionProof ? `
+        <div class="p-4 bg-secondary/10 border border-secondary/30 rounded-xl text-xs text-secondary space-y-1">
+          <div class="font-bold flex items-center gap-1.5 text-sm">
+            <span class="material-symbols-outlined text-[18px]">verified</span> Official Municipal Verification
+          </div>
+          <p>${issue.resolutionProof}</p>
+        </div>
+      ` : ''}
+    </div>
+  `;
 }
 
 
@@ -3016,6 +3147,7 @@ function renderHumanRightsMarquee() {
 }
 
 // Global Init on DOM Ready
+// Global Init on DOM Ready
 document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initLanguage();
@@ -3048,7 +3180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Handle Hash routing
   const hash = window.location.hash.replace('#', '') || 'home';
-  if (['home', 'dashboard', 'report', 'authority'].includes(hash)) {
+  if (['home', 'dashboard', 'report', 'authority', 'track', 'rights', 'constituency'].includes(hash)) {
     switchView(hash);
   } else {
     switchView('home');

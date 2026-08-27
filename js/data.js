@@ -4,6 +4,102 @@
 
 const INITIAL_ISSUES = [
   {
+    id: "JS-KA-2026-004821",
+    title: "Severe Garbage Accumulation on Main Road",
+    category: "Sanitation",
+    priority: "HIGH",
+    status: "Under Review",
+    location: "Koramangala 4th Block, Bengaluru",
+    ward: "Ward 151, Koramangala",
+    district: "Bengaluru Urban",
+    assembly: "B.T.M Layout",
+    coordinates: [12.9352, 77.6245],
+    reportedAt: "10 mins ago",
+    date: "2026-08-27",
+    reporter: {
+      name: "Anonymous Citizen",
+      phone: "+91 98450 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Large garbage accumulation near the main road creating health hazards and obstructing pedestrians.",
+    aiSummary: "Severe organic and plastic waste dumping detected near primary thoroughfare. Health and pedestrian hazard.",
+    aiConfidence: 94,
+    detectedObjects: ["Garbage bags", "Plastic waste", "Footpath obstruction", "Commercial debris"],
+    recommendedAuthority: "Bruhat Bengaluru Mahanagara Palike (BBMP)",
+    suggestedAction: "Emergency solid waste clearance & disinfectant spraying squad",
+    assignedTo: "BBMP Sanitation Squad 4",
+    resolutionProof: null,
+    upvotes: 94
+  },
+  {
+    id: "JS-KA-2026-004822",
+    title: "Dangerous Pothole on Ring Road Junction",
+    category: "Roads",
+    priority: "MED",
+    status: "In Progress",
+    location: "Outer Ring Road Junction, Dattagalli, Mysuru",
+    ward: "Ward 18, Dattagalli",
+    district: "Mysuru",
+    assembly: "Chamundeshwari",
+    coordinates: [12.2850, 76.6200],
+    reportedAt: "1 day ago",
+    date: "2026-08-26",
+    reporter: {
+      name: "Ramesh Kumar",
+      phone: "+91 94481 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Large 2-foot wide asphalt fissure causing two-wheelers to skid dangerously near traffic signal.",
+    aiSummary: "Road surface integrity failure detected on primary junction. Skidding hazard for commuter traffic.",
+    aiConfidence: 91,
+    detectedObjects: ["Asphalt fissure", "Pothole cavity", "Traffic lane"],
+    recommendedAuthority: "Mysuru City Corporation (MCC) PWD Cell",
+    suggestedAction: "Cold-mix asphalt patch resurfacing and warning barricades",
+    assignedTo: "MCC Road Maintenance Crew 2",
+    resolutionProof: null,
+    upvotes: 89
+  },
+  {
+    id: "JS-KA-2026-004823",
+    title: "Broken Street Light & Wiring Hazard",
+    category: "Electricity",
+    priority: "LOW",
+    status: "Resolved",
+    location: "MG Road, Mangaluru",
+    ward: "Ward 22, Mangaluru Central",
+    district: "Dakshina Kannada",
+    assembly: "Mangaluru City South",
+    coordinates: [12.8702, 74.8806],
+    reportedAt: "3 days ago",
+    date: "2026-08-24",
+    reporter: {
+      name: "Deepa S.",
+      phone: "+91 81050 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Damaged lamp post fixture and exposed wiring near bus shelter.",
+    aiSummary: "Illumination failure and exposed wiring detected at public transit node.",
+    aiConfidence: 89,
+    detectedObjects: ["Lamp post", "Exposed wiring", "Bus shelter"],
+    recommendedAuthority: "MESCOM Electrical Operations Division",
+    suggestedAction: "Replace LED fixture and insulate electrical junction box",
+    assignedTo: "MESCOM Field Linesman Squad 1",
+    resolutionProof: "LED fixture replaced and junction box insulated safely on Aug 25.",
+    upvotes: 65
+  },
+  {
     id: "JS-2026-00421",
     title: "Garbage Accumulation Near Government School",
     category: "Sanitation",
