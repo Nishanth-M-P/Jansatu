@@ -15,7 +15,12 @@ const AppState = {
   recordingVoice: false,
   voiceInterval: null,
   activeConstituency: null,
-  currentDraftAnalysis: { ...PRESET_ANALYSES.garbage }
+  currentDraftAnalysis: { ...PRESET_ANALYSES.garbage },
+  authoritySearch: '',
+  authorityStatusFilter: 'all',
+  authorityPriorityFilter: 'all',
+  isAuthorityLocked: false,
+  currentDivision: 'Mysuru Division (MCC)'
 };
 
 // Initialize State from LocalStorage or Data
@@ -35,10 +40,53 @@ function initIssuesData() {
 
 function saveIssuesToStorage() {
   localStorage.setItem('jansetu_issues', JSON.stringify(AppState.issues));
+  updateAllSystemMetrics();
 }
 
 function saveIssuesData() {
   saveIssuesToStorage();
+}
+
+function updateAllSystemMetrics() {
+  const total = AppState.issues.length;
+  const resolved = AppState.issues.filter(i => i.status === 'Resolved').length;
+  const assigned = AppState.issues.filter(i => i.status === 'Assigned' || i.status === 'In Progress' || i.status === 'Under Review').length;
+  const pending = AppState.issues.filter(i => i.status === 'Reported' || i.status === 'New').length;
+  const highPrio = AppState.issues.filter(i => i.priority === 'HIGH' && i.status !== 'Resolved').length;
+  const resolutionRate = total > 0 ? Math.round((resolved / total) * 100) : 0;
+
+  // 1. Authority Portal Metrics
+  const authNew = document.getElementById('auth-new-count');
+  const authHigh = document.getElementById('auth-high-count');
+  const authReview = document.getElementById('auth-review-count');
+  const authResolved = document.getElementById('auth-resolved-count');
+
+  if (authNew) authNew.innerText = pending;
+  if (authHigh) authHigh.innerText = highPrio;
+  if (authReview) authReview.innerText = assigned;
+  if (authResolved) authResolved.innerText = resolved;
+
+  // 2. Public Feed Badge
+  const publicCountEl = document.getElementById('public-issues-count');
+  if (publicCountEl) publicCountEl.innerText = `${total} Civic Reports`;
+
+  // 3. Dashboard Metrics
+  const dashTotal = document.getElementById('dash-total-reports');
+  const dashResolved = document.getElementById('dash-resolved-reports');
+  const dashAssigned = document.getElementById('dash-assigned-reports');
+  const dashPending = document.getElementById('dash-pending-reports');
+  const dashRate = document.getElementById('dash-resolution-rate');
+
+  if (dashTotal) dashTotal.innerText = total;
+  if (dashResolved) dashResolved.innerText = resolved;
+  if (dashAssigned) dashAssigned.innerText = assigned;
+  if (dashPending) dashPending.innerText = pending;
+  if (dashRate) dashRate.innerText = `${resolutionRate}%`;
+
+  // 4. Map Markers
+  if (AppState.mapInstance) {
+    renderMapMarkers();
+  }
 }
 
 // Toast Notifications
@@ -846,20 +894,32 @@ function renderConstituencyExplorer(name = null) {
 function handleConstituencySearch(query) {
   const notFoundEl = document.getElementById('constituency-not-found');
   const detailsEl = document.getElementById('constituency-details-container');
+  const clearBtn = document.getElementById('constituency-search-clear');
+
+  const trimmed = (query || '').trim();
+
+  // Toggle clear (x) button visibility based on input content
+  if (clearBtn) {
+    if (trimmed.length > 0) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
 
   // Case: User cleared/emptied the search input -> Return to Karnataka-level leader
-  if (!query || !query.trim()) {
+  if (!trimmed) {
     if (notFoundEl) notFoundEl.classList.add('hidden');
     if (detailsEl) detailsEl.classList.remove('hidden');
     renderConstituencyExplorer(null);
     return;
   }
 
-  const matched = getConstituencyData(query);
+  const matched = getConstituencyData(trimmed);
   if (matched) {
     if (notFoundEl) notFoundEl.classList.add('hidden');
     if (detailsEl) detailsEl.classList.remove('hidden');
-    renderConstituencyExplorer(matched.name.split(' (')[0] || query);
+    renderConstituencyExplorer(matched.name.split(' (')[0] || trimmed);
   } else {
     // Search term has no matching constituency in dataset
     if (notFoundEl) notFoundEl.classList.remove('hidden');
@@ -867,9 +927,20 @@ function handleConstituencySearch(query) {
   }
 }
 
-function clearConstituencySearch() {
+function clearConstituencySearch(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
   const searchInputs = document.querySelectorAll('input[oninput*="handleConstituencySearch"]');
-  searchInputs.forEach(input => { input.value = ''; });
+  searchInputs.forEach(input => { 
+    input.value = ''; 
+    input.focus();
+  });
+
+  const clearBtn = document.getElementById('constituency-search-clear');
+  if (clearBtn) clearBtn.classList.add('hidden');
+
   renderConstituencyExplorer(null);
 }
 
@@ -910,15 +981,15 @@ function renderPublicIssuesList() {
       else if (catFilter !== 'Water' && issue.category.toLowerCase() !== catFilter.toLowerCase()) return false;
     }
 
-    // Status filter
+    // Status filter - standardized values: Reported, Assigned, In Progress, Resolved
     if (statusFilter !== 'all') {
-      if (statusFilter === 'New' && issue.status !== 'New') return false;
-      else if (statusFilter === 'Under Review' && issue.status !== 'Under Review') return false;
+      if (statusFilter === 'Reported' && issue.status !== 'Reported' && issue.status !== 'New') return false;
       else if (statusFilter === 'Assigned' && issue.status !== 'Assigned') return false;
+      else if (statusFilter === 'In Progress' && issue.status !== 'In Progress' && issue.status !== 'Under Review') return false;
       else if (statusFilter === 'Resolved' && issue.status !== 'Resolved') return false;
     }
 
-    // Search query
+    // Search query - multi-field case-insensitive search by title, category, location, ward, district, assembly, ID
     if (searchQuery) {
       const haystack = `${issue.title} ${issue.description} ${issue.location} ${issue.ward} ${issue.category} ${issue.district || ''} ${issue.assembly || ''} ${issue.id}`.toLowerCase();
       if (!haystack.includes(searchQuery)) return false;
@@ -929,19 +1000,24 @@ function renderPublicIssuesList() {
 
   const counterEl = document.getElementById('issues-result-counter');
   if (counterEl) {
-    counterEl.innerText = `Showing ${filtered.length} of 1,204 public issues`;
+    const isFiltered = (searchQuery || catFilter !== 'all' || statusFilter !== 'all' || activeConst);
+    if (!isFiltered) {
+      counterEl.innerText = `Showing ${filtered.length} of 1,204 public issues`;
+    } else {
+      counterEl.innerText = `Showing ${filtered.length} matching public issue${filtered.length === 1 ? '' : 's'}`;
+    }
   }
 
   if (filtered.length === 0) {
     container.innerHTML = `
       <div class="col-span-full py-12 px-4 text-center bg-surface-container-low rounded-2xl border border-outline-variant">
         <div class="w-14 h-14 rounded-2xl bg-surface-container-high text-on-surface-variant flex items-center justify-center mx-auto mb-3">
-          <span class="material-symbols-outlined text-3xl">search_off</span>
+          <span class="material-symbols-outlined text-3xl text-primary">search_off</span>
         </div>
-        <h3 class="font-bold text-base text-on-surface mb-1">No Matching Public Issues Found</h3>
-        <p class="text-xs text-on-surface-variant max-w-md mx-auto mb-4">Try clearing filters or search terms to see all reported community incidents across Karnataka.</p>
+        <h3 class="font-bold text-base text-on-surface mb-1">No public issues found</h3>
+        <p class="text-xs text-on-surface-variant max-w-md mx-auto mb-4">Try a different search or clear the filter.</p>
         <button onclick="resetPublicIssuesFilters()" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-xl shadow-xs hover:opacity-95 transition-all">
-          Reset All Filters
+          Clear All Filters
         </button>
       </div>
     `;
@@ -958,8 +1034,8 @@ function renderPublicIssuesList() {
                            'bg-slate-500/10 text-slate-600 border-slate-500/30';
 
     const statusBadgeClass = isResolved ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30' :
+                             issue.status === 'In Progress' || issue.status === 'Under Review' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30' :
                              issue.status === 'Assigned' ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30' :
-                             issue.status === 'Under Review' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30' :
                              'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30';
 
     const catIcon = issue.category.toLowerCase().includes('sanit') ? 'delete' :
@@ -967,10 +1043,10 @@ function renderPublicIssuesList() {
                     issue.category.toLowerCase().includes('water') ? 'water_drop' :
                     issue.category.toLowerCase().includes('elect') ? 'bolt' : 'report';
 
-    const imgUrl = (issue.images && issue.images[0]) ? issue.images[0] : 'https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA';
+    const imgUrl = (issue.images && issue.images[0]) ? issue.images[0] : 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80';
 
     const statusStep = issue.status === 'Resolved' ? 4 :
-                       issue.status === 'In Progress' ? 3 :
+                       issue.status === 'In Progress' || issue.status === 'Under Review' ? 3 :
                        issue.status === 'Assigned' ? 2 : 1;
 
     const step1Bg = statusStep >= 1 ? 'bg-primary' : 'bg-outline-variant/40';
@@ -978,10 +1054,10 @@ function renderPublicIssuesList() {
     const step3Bg = statusStep >= 3 ? 'bg-primary' : 'bg-outline-variant/40';
     const step4Bg = statusStep >= 4 ? 'bg-secondary' : 'bg-outline-variant/40';
 
-    const t = I18N[AppState.currentLang] || I18N.en;
+    const currentStatusDisplay = issue.status === 'New' ? 'Reported' : issue.status === 'Under Review' ? 'In Progress' : issue.status;
 
     return `
-      <article class="bg-surface rounded-2xl border border-outline-variant/70 level-1-shadow overflow-hidden flex flex-col group hover:shadow-xl transition-all duration-300">
+      <article onclick="openPublicIssueDetailModal('${issue.id}')" class="bg-surface rounded-2xl border border-outline-variant/70 level-1-shadow overflow-hidden flex flex-col group cursor-pointer hover:shadow-xl transition-all duration-300">
         <!-- Card Image Header -->
         <div class="relative h-44 w-full bg-surface-container overflow-hidden">
           <img src="${imgUrl}" alt="${issue.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
@@ -1003,7 +1079,7 @@ function renderPublicIssuesList() {
           <div class="absolute bottom-2.5 left-3 right-3 flex justify-between items-center text-white text-xs">
             <span class="font-mono font-bold bg-black/50 px-2 py-0.5 rounded backdrop-blur-sm">#${issue.id}</span>
             <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold backdrop-blur-md border ${statusBadgeClass} bg-surface/90">
-              ● ${issue.status}
+              ● ${currentStatusDisplay}
             </span>
           </div>
         </div>
@@ -1020,7 +1096,7 @@ function renderPublicIssuesList() {
               <span class="truncate font-medium">${issue.location} • ${issue.ward || ''}</span>
             </p>
 
-            <!-- Mock AI Analysis Triage Box -->
+            <!-- AI Analysis Triage Box -->
             <div class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/60 text-xs space-y-1">
               <div class="flex items-center justify-between">
                 <span class="font-bold text-primary flex items-center gap-1 text-[10px] uppercase tracking-wider">
@@ -1033,11 +1109,11 @@ function renderPublicIssuesList() {
               </p>
             </div>
 
-            <!-- Visual Status Progress Bar: Reported → Assigned → In Progress → Resolved -->
+            <!-- Standardized Status Progress Bar: Reported → Assigned → In Progress → Resolved -->
             <div class="mt-3 pt-2 border-t border-outline-variant/60">
               <div class="flex items-center justify-between text-[10px] font-bold text-on-surface-variant mb-1">
                 <span>Progress Tracker</span>
-                <span class="text-primary font-semibold">${t['status' + (issue.status === 'New' ? 'Reported' : issue.status.replace(/\s+/g, ''))] || issue.status}</span>
+                <span class="text-primary font-semibold">${currentStatusDisplay}</span>
               </div>
               <div class="grid grid-cols-4 gap-1">
                 <div class="h-1.5 rounded-full ${step1Bg}"></div>
@@ -1046,24 +1122,31 @@ function renderPublicIssuesList() {
                 <div class="h-1.5 rounded-full ${step4Bg}"></div>
               </div>
               <div class="flex justify-between text-[9px] font-medium text-on-surface-variant/70 mt-1">
-                <span>${t.statusFlowReported || 'Reported'}</span>
-                <span>${t.statusFlowAssigned || 'Assigned'}</span>
-                <span>${t.statusFlowProgress || 'In Progress'}</span>
-                <span>${t.statusFlowResolved || 'Resolved'}</span>
+                <span>Reported</span>
+                <span>Assigned</span>
+                <span>In Progress</span>
+                <span>Resolved</span>
               </div>
             </div>
           </div>
 
           <!-- Card Actions Footer -->
           <div class="pt-2.5 border-t border-outline-variant/60 flex items-center justify-between gap-2">
-            <!-- Upvote Button -->
-            <button onclick="togglePublicIssueUpvote('${issue.id}', event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-secondary/10 hover:text-secondary text-on-surface text-xs font-bold transition-all" title="Support this civic report">
-              <span class="material-symbols-outlined text-[16px] text-secondary">thumb_up</span>
-              <span>${issue.upvotes || 0}</span>
-            </button>
+            <div class="flex items-center gap-1.5">
+              <!-- Upvote Button -->
+              <button onclick="togglePublicIssueUpvote('${issue.id}', event)" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-high hover:bg-secondary/10 hover:text-secondary text-on-surface text-xs font-bold transition-all" title="Support this civic report">
+                <span class="material-symbols-outlined text-[16px] text-secondary">thumb_up</span>
+                <span>${issue.upvotes || 0}</span>
+              </button>
+
+              <!-- Delete / Archive Button -->
+              <button onclick="event.stopPropagation(); confirmDeleteIssue('${issue.id}')" class="p-1.5 rounded-xl bg-surface-container-high hover:bg-error/10 hover:text-error text-on-surface-variant text-xs font-bold transition-all flex items-center justify-center" title="Delete / Archive Issue Record">
+                <span class="material-symbols-outlined text-[16px]">delete</span>
+              </button>
+            </div>
 
             <!-- View Details Button -->
-            <button onclick="openPublicIssueDetailModal('${issue.id}')" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-white hover:bg-primary-container font-bold text-xs shadow-xs transition-all">
+            <button onclick="openPublicIssueDetailModal('${issue.id}')" class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-primary text-white hover:opacity-95 font-bold text-xs shadow-xs transition-all">
               <span data-i18n="viewDetails">View Details</span>
               <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
             </button>
@@ -1099,6 +1182,31 @@ function filterPublicIssues(type, val) {
 
 function handlePublicIssuesSearch(query) {
   AppState.publicIssuesSearchQuery = query;
+  const clearBtn = document.getElementById('public-issues-search-clear');
+  if (clearBtn) {
+    if ((query || '').trim().length > 0) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  renderPublicIssuesList();
+}
+
+function clearPublicIssuesSearch(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  AppState.publicIssuesSearchQuery = '';
+  const searchInput = document.getElementById('public-issues-search');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  const clearBtn = document.getElementById('public-issues-search-clear');
+  if (clearBtn) clearBtn.classList.add('hidden');
+
   renderPublicIssuesList();
 }
 
@@ -1109,6 +1217,10 @@ function resetPublicIssuesFilters() {
   AppState.activeConstituency = null;
   const searchInput = document.getElementById('public-issues-search');
   if (searchInput) searchInput.value = '';
+
+  const clearBtn = document.getElementById('public-issues-search-clear');
+  if (clearBtn) clearBtn.classList.add('hidden');
+
   filterPublicIssues('cat', 'all');
   filterPublicIssues('status', 'all');
   renderConstituencyExplorer(null);
@@ -1246,13 +1358,13 @@ function openPublicIssueDetailModal(issueId) {
             <span class="material-symbols-outlined text-[16px]">check_circle</span>
             <span>1. Reported</span>
           </div>
-          <div class="p-2 rounded-lg ${issue.status !== 'New' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
-            <span class="material-symbols-outlined text-[16px]">${issue.status !== 'New' ? 'check_circle' : 'hourglass_empty'}</span>
-            <span>2. Under Review</span>
+          <div class="p-2 rounded-lg ${issue.status === 'Assigned' || issue.status === 'In Progress' || issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">${issue.status === 'Assigned' || issue.status === 'In Progress' || issue.status === 'Resolved' ? 'check_circle' : 'hourglass_empty'}</span>
+            <span>2. Assigned</span>
           </div>
-          <div class="p-2 rounded-lg ${issue.status === 'Assigned' || issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
-            <span class="material-symbols-outlined text-[16px]">${issue.status === 'Assigned' || issue.status === 'Resolved' ? 'check_circle' : 'pending'}</span>
-            <span>3. Assigned</span>
+          <div class="p-2 rounded-lg ${issue.status === 'In Progress' || issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">${issue.status === 'In Progress' || issue.status === 'Resolved' ? 'check_circle' : 'pending'}</span>
+            <span>3. In Progress</span>
           </div>
           <div class="p-2 rounded-lg ${issue.status === 'Resolved' ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-high text-on-surface-variant font-medium'} flex flex-col items-center gap-1">
             <span class="material-symbols-outlined text-[16px]">${issue.status === 'Resolved' ? 'verified' : 'flag'}</span>
@@ -1274,10 +1386,13 @@ function openPublicIssueDetailModal(issueId) {
         </button>
 
         <div class="flex items-center gap-2 w-full sm:w-auto">
-          <button onclick="closePublicIssueDetailModal(); switchView('report');" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-surface border border-outline-variant hover:bg-surface-container-high text-xs font-bold text-on-surface transition-all">
-            Report Related Issue
+          <button onclick="confirmDeleteIssue('${issue.id}')" class="w-full sm:w-auto px-3 py-2.5 rounded-xl bg-surface border border-error/40 text-error hover:bg-error/10 text-xs font-bold transition-all flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">delete</span> Delete
           </button>
-          <button onclick="closePublicIssueDetailModal()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-primary text-white hover:bg-primary-container text-xs font-bold shadow-xs transition-all">
+          <button onclick="closePublicIssueDetailModal(); switchView('report');" class="w-full sm:w-auto px-3.5 py-2.5 rounded-xl bg-surface border border-outline-variant hover:bg-surface-container-high text-xs font-bold text-on-surface transition-all">
+            Report Related
+          </button>
+          <button onclick="closePublicIssueDetailModal()" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-primary text-white hover:opacity-95 text-xs font-bold shadow-xs transition-all">
             Close
           </button>
         </div>
@@ -1310,6 +1425,7 @@ function closePublicIssueDetailModal() {
 }
 
 // ==========================================
+// ==========================================
 // AUTHORITY PORTAL OPERATIONS ENGINE
 // ==========================================
 
@@ -1320,9 +1436,9 @@ function renderAuthorityPortal() {
 }
 
 function renderAuthorityMetrics() {
-  const newCount = AppState.issues.filter(i => i.status === 'New').length;
+  const newCount = AppState.issues.filter(i => i.status === 'Reported' || i.status === 'New').length;
   const highCount = AppState.issues.filter(i => i.priority === 'HIGH' && i.status !== 'Resolved').length;
-  const reviewCount = AppState.issues.filter(i => i.status === 'Under Review' || i.status === 'Assigned').length;
+  const reviewCount = AppState.issues.filter(i => i.status === 'Under Review' || i.status === 'Assigned' || i.status === 'In Progress').length;
   const resolvedCount = AppState.issues.filter(i => i.status === 'Resolved').length;
 
   const newEl = document.getElementById('auth-new-count');
@@ -1336,18 +1452,137 @@ function renderAuthorityMetrics() {
   if (resolvedEl) resolvedEl.innerText = resolvedCount;
 }
 
-function renderAuthorityTable(filterText = '', filterStatus = 'all', filterPriority = 'all') {
+function handleAuthoritySearchInput(val) {
+  AppState.authoritySearch = (val || '').trim();
+  const clearBtn = document.getElementById('authority-search-clear');
+  if (clearBtn) {
+    if (AppState.authoritySearch.length > 0) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+  renderAuthorityTable();
+}
+
+function clearAuthoritySearch(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  AppState.authoritySearch = '';
+  const searchInput = document.getElementById('authority-table-search');
+  const clearBtn = document.getElementById('authority-search-clear');
+  if (searchInput) {
+    searchInput.value = '';
+    searchInput.focus();
+  }
+  if (clearBtn) {
+    clearBtn.classList.add('hidden');
+  }
+  renderAuthorityTable();
+}
+
+function filterAuthorityTable(type, val) {
+  if (type === 'priority') {
+    AppState.authorityPriorityFilter = val;
+    document.querySelectorAll('.auth-prio-btn').forEach(btn => {
+      const isMatch = btn.dataset.prio === val;
+      if (isMatch) {
+        btn.className = 'auth-prio-btn px-2.5 py-1 rounded-lg font-bold bg-primary text-white text-[11px]';
+      } else {
+        btn.className = 'auth-prio-btn px-2.5 py-1 rounded-lg font-semibold bg-surface-container-high hover:bg-surface-variant text-on-surface text-[11px]';
+      }
+    });
+  } else if (type === 'status') {
+    AppState.authorityStatusFilter = val;
+    document.querySelectorAll('.auth-status-btn').forEach(btn => {
+      const isMatch = btn.dataset.status === val;
+      if (isMatch) {
+        btn.className = 'auth-status-btn px-2.5 py-1 rounded-lg font-bold bg-primary text-white text-[11px]';
+      } else {
+        btn.className = 'auth-status-btn px-2.5 py-1 rounded-lg font-semibold bg-surface-container-high hover:bg-surface-variant text-on-surface text-[11px]';
+      }
+    });
+  }
+  renderAuthorityTable();
+}
+
+function handleAuthorityDivisionChange(divisionName) {
+  AppState.currentDivision = divisionName;
+  const titleEl = document.getElementById('auth-division-title');
+  if (titleEl) {
+    titleEl.innerText = `${divisionName} Incident Triage`;
+  }
+  renderAuthorityPortal();
+  showToast('Division Switched', `Active operational scope changed to ${divisionName}`, 'info');
+}
+
+function toggleAuthorityLock() {
+  AppState.isAuthorityLocked = !AppState.isAuthorityLocked;
+  const lockBtn = document.getElementById('auth-lock-btn');
+  const lockIcon = document.getElementById('auth-lock-icon');
+  const lockLabel = document.getElementById('auth-lock-label');
+  const lockBadge = document.getElementById('auth-lock-indicator-badge');
+
+  const assignBtn = document.getElementById('auth-btn-assign');
+  const cycleBtn = document.getElementById('auth-btn-cycle');
+  const resolveBtn = document.getElementById('auth-btn-resolve');
+  const deleteBtn = document.getElementById('auth-btn-delete');
+
+  if (AppState.isAuthorityLocked) {
+    if (lockBtn) lockBtn.className = 'bg-error text-white border border-error py-2 px-3.5 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-xs';
+    if (lockIcon) lockIcon.innerText = 'lock';
+    if (lockLabel) lockLabel.innerText = 'Portal Locked';
+    if (lockBadge) lockBadge.classList.remove('hidden');
+
+    if (assignBtn) assignBtn.disabled = true;
+    if (cycleBtn) cycleBtn.disabled = true;
+    if (resolveBtn) resolveBtn.disabled = true;
+    if (deleteBtn) deleteBtn.disabled = true;
+
+    showToast('Portal Locked', 'Operational action buttons disabled.', 'warning');
+  } else {
+    if (lockBtn) lockBtn.className = 'bg-surface border border-error/40 text-error hover:bg-error/10 py-2 px-3.5 rounded-xl flex items-center gap-1 text-xs font-bold transition-all shadow-xs';
+    if (lockIcon) lockIcon.innerText = 'lock_open';
+    if (lockLabel) lockLabel.innerText = 'Lock';
+    if (lockBadge) lockBadge.classList.add('hidden');
+
+    if (assignBtn) assignBtn.disabled = false;
+    if (cycleBtn) cycleBtn.disabled = false;
+    if (resolveBtn) resolveBtn.disabled = false;
+    if (deleteBtn) deleteBtn.disabled = false;
+
+    showToast('Console Unlocked', 'Officer permissions restored.', 'success');
+  }
+}
+
+function exportAuthorityReport() {
+  const filteredCount = AppState.issues.length;
+  showToast('Export Successful', `Exported ${filteredCount} triage incident records (${AppState.currentDivision}) to CSV format.`, 'success');
+}
+
+function renderAuthorityTable() {
   const tbody = document.getElementById('authority-table-body');
   if (!tbody) return;
 
-  const filtered = AppState.issues.filter(i => {
-    const matchesSearch = !filterText || 
-      i.id.toLowerCase().includes(filterText.toLowerCase()) || 
-      i.location.toLowerCase().includes(filterText.toLowerCase()) || 
-      i.category.toLowerCase().includes(filterText.toLowerCase());
+  const query = (AppState.authoritySearch || '').toLowerCase();
+  const statusFilter = AppState.authorityStatusFilter;
+  const prioFilter = AppState.authorityPriorityFilter;
 
-    const matchesStatus = filterStatus === 'all' || i.status.toLowerCase() === filterStatus.toLowerCase();
-    const matchesPriority = filterPriority === 'all' || i.priority.toLowerCase() === filterPriority.toLowerCase();
+  const filtered = AppState.issues.filter(i => {
+    const matchesSearch = !query || 
+      i.id.toLowerCase().includes(query) || 
+      i.location.toLowerCase().includes(query) || 
+      i.category.toLowerCase().includes(query) ||
+      (i.ward && i.ward.toLowerCase().includes(query)) ||
+      (i.status && i.status.toLowerCase().includes(query));
+
+    const matchesStatus = statusFilter === 'all' || 
+      (statusFilter === 'Reported' && (i.status === 'Reported' || i.status === 'New')) ||
+      i.status.toLowerCase() === statusFilter.toLowerCase();
+
+    const matchesPriority = prioFilter === 'all' || i.priority.toLowerCase() === prioFilter.toLowerCase();
 
     return matchesSearch && matchesStatus && matchesPriority;
   });
@@ -1355,38 +1590,49 @@ function renderAuthorityTable(filterText = '', filterStatus = 'all', filterPrior
   if (filtered.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="p-8 text-center text-on-surface-variant">
-          <span class="material-symbols-outlined text-4xl mb-2 opacity-40">search_off</span>
-          <p>No matching incident reports found in Mysuru Division.</p>
+        <td colspan="5" class="p-8 text-center text-on-surface-variant bg-surface-container-low">
+          <span class="material-symbols-outlined text-4xl mb-2 text-primary opacity-40">search_off</span>
+          <p class="font-bold text-sm text-on-surface">No matching incident reports found</p>
+          <p class="text-xs text-on-surface-variant mt-1">Try another ID, category, ward, or status filter.</p>
+          <button onclick="clearAuthoritySearch(); filterAuthorityTable('priority','all'); filterAuthorityTable('status','all');" class="mt-3 px-3 py-1.5 bg-primary/10 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-bold transition-colors">
+            Reset Filters
+          </button>
         </td>
       </tr>
     `;
     return;
   }
 
+  // Auto-select first matching issue if current selection is not in list
+  if (!filtered.some(i => i.id === AppState.selectedIssueId)) {
+    AppState.selectedIssueId = filtered[0].id;
+  }
+
   tbody.innerHTML = filtered.map(issue => {
     const isSelected = issue.id === AppState.selectedIssueId;
     const prioBadge = issue.priority === 'HIGH' ? 
-      '<span class="inline-flex items-center gap-1 px-2 py-1 bg-error/10 text-error rounded font-label-sm text-label-sm font-bold"><span class="material-symbols-outlined text-[14px]">local_fire_department</span> HIGH</span>' :
+      '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-error/10 text-error rounded font-bold text-[11px]"><span class="material-symbols-outlined text-[13px]">priority_high</span> HIGH</span>' :
       issue.priority === 'MED' ?
-      '<span class="inline-flex items-center gap-1 px-2 py-1 bg-[#d97706]/10 text-[#d97706] rounded font-label-sm text-label-sm font-bold"><span class="material-symbols-outlined text-[14px]">warning</span> MED</span>' :
-      '<span class="inline-flex items-center gap-1 px-2 py-1 bg-outline/10 text-outline rounded font-label-sm text-label-sm font-bold"><span class="material-symbols-outlined text-[14px]">info</span> LOW</span>';
+      '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-500/10 text-amber-600 rounded font-bold text-[11px]"><span class="material-symbols-outlined text-[13px]">warning</span> MED</span>' :
+      '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-500/10 text-slate-600 rounded font-bold text-[11px]"><span class="material-symbols-outlined text-[13px]">info</span> LOW</span>';
 
-    const statusBadge = issue.status === 'Resolved' ?
-      '<span class="inline-flex items-center px-2 py-1 bg-secondary-fixed text-on-secondary-fixed rounded-full font-label-sm text-label-sm font-semibold">Resolved</span>' :
-      issue.status === 'Under Review' ?
-      '<span class="inline-flex items-center px-2 py-1 bg-tertiary-fixed text-on-tertiary-fixed rounded-full font-label-sm text-label-sm font-semibold">Under Review</span>' :
-      issue.status === 'Assigned' ?
-      '<span class="inline-flex items-center px-2 py-1 bg-primary-fixed text-on-primary-fixed rounded-full font-label-sm text-label-sm font-semibold">Assigned</span>' :
-      '<span class="inline-flex items-center px-2 py-1 bg-surface-variant text-on-surface rounded-full font-label-sm text-label-sm font-semibold">New</span>';
+    const normStatus = (issue.status === 'New') ? 'Reported' : issue.status;
+
+    const statusBadge = normStatus === 'Resolved' ?
+      '<span class="inline-flex items-center px-2 py-0.5 bg-secondary/15 text-secondary rounded-full font-bold text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-secondary mr-1"></span> Resolved</span>' :
+      normStatus === 'In Progress' || normStatus === 'Under Review' ?
+      '<span class="inline-flex items-center px-2 py-0.5 bg-amber-500/15 text-amber-600 rounded-full font-bold text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1"></span> In Progress</span>' :
+      normStatus === 'Assigned' ?
+      '<span class="inline-flex items-center px-2 py-0.5 bg-primary/15 text-primary rounded-full font-bold text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-primary mr-1"></span> Assigned</span>' :
+      '<span class="inline-flex items-center px-2 py-0.5 bg-surface-variant text-on-surface-variant rounded-full font-bold text-[11px]"><span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant/60 mr-1"></span> Reported</span>';
 
     return `
-      <tr onclick="selectAuthorityReport('${issue.id}')" class="${isSelected ? 'bg-primary-fixed/60 border-l-4 border-primary' : 'hover:bg-surface-container-low border-l-4 border-transparent'} transition-colors cursor-pointer">
-        <td class="p-md font-label-md text-label-md font-bold text-primary">#${issue.id}</td>
-        <td class="p-md">${prioBadge}</td>
-        <td class="p-md font-medium">${issue.category}</td>
-        <td class="p-md text-on-surface-variant text-sm truncate max-w-xs">${issue.location}</td>
-        <td class="p-md">${statusBadge}</td>
+      <tr onclick="selectAuthorityReport('${issue.id}')" class="${isSelected ? 'bg-primary/10 border-l-4 border-primary text-primary font-semibold shadow-xs' : 'hover:bg-surface-container-low border-l-4 border-transparent text-on-surface'} transition-colors cursor-pointer">
+        <td class="p-3.5 font-bold font-mono text-primary">#${issue.id}</td>
+        <td class="p-3.5">${prioBadge}</td>
+        <td class="p-3.5 font-medium">${issue.category}</td>
+        <td class="p-3.5 text-on-surface-variant truncate max-w-[180px]">${issue.location} ${issue.ward ? `(${issue.ward})` : ''}</td>
+        <td class="p-3.5">${statusBadge}</td>
       </tr>
     `;
   }).join('');
@@ -1413,86 +1659,202 @@ function renderAuthorityDetail() {
   const locEl = document.getElementById('auth-detail-loc');
   const wardEl = document.getElementById('auth-detail-ward');
   const imgGrid = document.getElementById('auth-detail-images');
-  const reporterEl = document.getElementById('auth-detail-reporter');
   const summaryEl = document.getElementById('auth-detail-summary');
+  const actionEl = document.getElementById('auth-detail-action');
   const teamEl = document.getElementById('auth-detail-assigned');
+  const progressEl = document.getElementById('auth-detail-progress-tracker');
 
   if (idEl) idEl.innerText = `#${issue.id}`;
   if (prioEl) {
     prioEl.innerHTML = `
-      <span class="inline-flex items-center gap-1 px-2.5 py-1 ${issue.priority === 'HIGH' ? 'bg-error/10 text-error' : 'bg-[#d97706]/10 text-[#d97706]'} rounded-md font-label-md text-label-md font-bold">
-        <span class="material-symbols-outlined text-[16px]">priority_high</span> AI Priority: ${issue.priority}
+      <span class="inline-flex items-center gap-1 font-bold ${issue.priority === 'HIGH' ? 'text-error' : issue.priority === 'MED' ? 'text-amber-600' : 'text-slate-600'}">
+        <span class="material-symbols-outlined text-[14px]">priority_high</span> ${issue.priority} Priority
       </span>
     `;
   }
-  if (catEl) catEl.innerHTML = `<span class="material-symbols-outlined text-[16px]">category</span> ${issue.category}`;
+  if (catEl) catEl.innerText = issue.category;
   if (locEl) locEl.innerText = issue.location;
-  if (wardEl) wardEl.innerText = issue.ward;
-  if (summaryEl) summaryEl.innerText = `"${issue.aiSummary}"`;
-  if (teamEl) teamEl.innerText = issue.assignedTo ? `Assigned to: ${issue.assignedTo}` : 'Unassigned';
+  if (wardEl) wardEl.innerText = issue.ward ? `Ward: ${issue.ward} • ${issue.district || 'Mysuru District'}` : 'Mysuru Division';
+  if (summaryEl) summaryEl.innerText = `"${issue.aiSummary || 'AI Vision detected civic infrastructure defect requiring squad dispatch.'}"`;
+  
+  if (actionEl) {
+    const recommendedAction = issue.category === 'Sanitation' ? 'Emergency solid-waste clearance and sanitation inspection.' :
+                              issue.category === 'Roads' ? 'Deploy asphalt patch crew and install hazard warning cones.' :
+                              issue.category === 'Water' ? 'Inspect main valve shutoff and repair pipe leakage.' :
+                              issue.category === 'Electricity' ? 'Dispatch linesman crew for wiring inspection and repair.' :
+                              'Dispatch field inspection squad for verification.';
+    actionEl.innerText = recommendedAction;
+  }
 
-  if (imgGrid && issue.images) {
-    imgGrid.innerHTML = issue.images.map(img => `
-      <img class="w-full h-28 object-cover rounded-lg border border-outline-variant hover:scale-105 transition-transform cursor-pointer" src="${img}" alt="Civic Evidence" onclick="window.open('${img}', '_blank')" />
+  if (teamEl) {
+    teamEl.innerText = issue.assignedTo ? issue.assignedTo : 'Unassigned — Action Required';
+  }
+
+  // Evidence Photos
+  if (imgGrid) {
+    const images = (issue.images && issue.images.length > 0) ? issue.images : [issue.imageUrl || 'assets/karnataka_govt_logo.svg'];
+    imgGrid.innerHTML = images.map(img => `
+      <div class="relative group aspect-video bg-black/5 rounded-xl border border-outline-variant/60 overflow-hidden cursor-pointer shadow-xs" onclick="openImagePreviewModal('${img}')">
+        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" src="${img}" alt="Civic Evidence" />
+        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1">
+          <span class="material-symbols-outlined text-[18px]">zoom_in</span> Inspect
+        </div>
+      </div>
     `).join('');
   }
 
-  if (reporterEl) {
-    reporterEl.innerHTML = `
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-surface-variant rounded-full flex items-center justify-center text-on-surface-variant">
-          <span class="material-symbols-outlined">person</span>
+  // Resolution Progress Tracker Pipeline
+  if (progressEl) {
+    const normStatus = (issue.status === 'New') ? 'Reported' : issue.status;
+    const isAssigned = normStatus === 'Assigned' || normStatus === 'In Progress' || normStatus === 'Resolved';
+    const isInProgress = normStatus === 'In Progress' || normStatus === 'Resolved';
+    const isResolved = normStatus === 'Resolved';
+
+    progressEl.innerHTML = `
+      <div class="grid grid-cols-4 gap-1.5 text-center text-[10px]">
+        <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold flex flex-col items-center gap-0.5">
+          <span class="material-symbols-outlined text-[15px]">check_circle</span>
+          <span>1. Reported</span>
         </div>
-        <div>
-          <p class="font-label-md text-label-md font-semibold text-on-surface">${issue.reporter.name}</p>
-          <p class="font-label-sm text-label-sm text-on-surface-variant">${issue.reporter.isProtected ? 'Protected Identity Shield' : 'Public Citizen Profile'}</p>
+        <div class="p-2 rounded-lg ${isAssigned ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-low text-on-surface-variant/70 font-medium'} flex flex-col items-center gap-0.5">
+          <span class="material-symbols-outlined text-[15px]">${isAssigned ? 'check_circle' : 'hourglass_empty'}</span>
+          <span>2. Assigned</span>
+        </div>
+        <div class="p-2 rounded-lg ${isInProgress ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-low text-on-surface-variant/70 font-medium'} flex flex-col items-center gap-0.5">
+          <span class="material-symbols-outlined text-[15px]">${isInProgress ? 'check_circle' : 'pending'}</span>
+          <span>3. In Progress</span>
+        </div>
+        <div class="p-2 rounded-lg ${isResolved ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold' : 'bg-surface-container-low text-on-surface-variant/70 font-medium'} flex flex-col items-center gap-0.5">
+          <span class="material-symbols-outlined text-[15px]">${isResolved ? 'verified' : 'flag'}</span>
+          <span>4. Resolved</span>
         </div>
       </div>
-      <span class="material-symbols-outlined text-outline" title="${issue.reporter.isProtected ? 'Protected Identity' : 'Public'}">${issue.reporter.isProtected ? 'lock' : 'lock_open'}</span>
     `;
   }
 }
 
+function openImagePreviewModal(url) {
+  const modal = document.getElementById('image-preview-modal');
+  const targetImg = document.getElementById('image-preview-target');
+  if (modal && targetImg) {
+    targetImg.src = url;
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      modal.classList.remove('opacity-0');
+    }, 10);
+  }
+}
+
+function closeImagePreviewModal() {
+  const modal = document.getElementById('image-preview-modal');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 300);
+  }
+}
+
 function assignSelectedReportToTeam() {
+  if (AppState.isAuthorityLocked) {
+    showToast('Portal Locked', 'Unlock portal to modify incident assignments.', 'warning');
+    return;
+  }
+
   const issue = AppState.issues.find(i => i.id === AppState.selectedIssueId);
   if (!issue) return;
 
-  const team = prompt('Assign to Municipal Response Unit:\n1. MCC Health & Sanitation Squad 3\n2. PWD Road Maintenance Crew 4\n3. CHESCOM Rapid Response Unit 2\n\nEnter Team Name:', 'MCC Health & Sanitation Squad 3');
+  const defaultTeam = issue.category === 'Sanitation' ? 'MCC Health & Sanitation Squad 3' :
+                      issue.category === 'Roads' ? 'PWD Road Maintenance Crew 4' :
+                      issue.category === 'Water' ? 'KUWSDB Rapid Pipe Repair Unit 1' :
+                      issue.category === 'Electricity' ? 'CHESCOM Field Linesman Unit 2' :
+                      'Mysuru Municipal Response Squad 1';
+
+  const team = prompt(`Assign Incident #${issue.id} to Field Squad:\n\nRecommended: ${defaultTeam}\n\nEnter Team Name:`, defaultTeam);
   
   if (team) {
     issue.assignedTo = team;
     issue.status = 'Assigned';
     saveIssuesToStorage();
     renderAuthorityPortal();
-    showToast('Dispatched to Field Crew', `Incident #${issue.id} assigned to ${team}`, 'success');
+    showToast('Dispatched to Field Squad', `Incident #${issue.id} assigned to ${team}`, 'success');
   }
 }
 
 function updateSelectedReportStatus() {
+  if (AppState.isAuthorityLocked) {
+    showToast('Portal Locked', 'Unlock portal to cycle status.', 'warning');
+    return;
+  }
+
   const issue = AppState.issues.find(i => i.id === AppState.selectedIssueId);
   if (!issue) return;
 
-  const nextStatus = issue.status === 'New' ? 'Under Review' : 
-                     issue.status === 'Under Review' ? 'In Progress' : 'Resolved';
-  
+  const current = (issue.status === 'New') ? 'Reported' : issue.status;
+  const nextStatus = current === 'Reported' ? 'Assigned' : 
+                     current === 'Assigned' ? 'In Progress' : 'Resolved';
+
+  if (!issue.assignedTo && nextStatus === 'Assigned') {
+    issue.assignedTo = 'MCC Municipal Squad 1';
+  }
+
   issue.status = nextStatus;
   saveIssuesToStorage();
   renderAuthorityPortal();
-  showToast('Status Updated', `Report #${issue.id} marked as ${nextStatus}`, 'info');
+  showToast('Status Updated', `Incident #${issue.id} status changed to ${nextStatus}`, 'info');
 }
 
 function markSelectedReportResolved() {
+  if (AppState.isAuthorityLocked) {
+    showToast('Portal Locked', 'Unlock portal to resolve incidents.', 'warning');
+    return;
+  }
+
   const issue = AppState.issues.find(i => i.id === AppState.selectedIssueId);
   if (!issue) return;
 
-  const proof = prompt('Enter Official Resolution Summary / Inspection Note:', 'Field team verified and resolved the issue on site. Waste cleared / repairs completed.');
+  const proof = prompt(`Enter Official Resolution Verification Note for #${issue.id}:`, 'Field team verified and resolved the issue on site. Waste cleared / infrastructure restored.');
   
   if (proof !== null) {
     issue.status = 'Resolved';
     issue.resolutionProof = proof;
     saveIssuesToStorage();
     renderAuthorityPortal();
-    showToast('Incident Resolved!', `Report #${issue.id} marked resolved. Citizen SMS alert sent.`, 'success');
+    showToast('Incident Marked Resolved!', `Report #${issue.id} marked as resolved. SMS notification sent.`, 'success');
+  }
+}
+
+function confirmDeleteSelectedReport() {
+  if (AppState.isAuthorityLocked) {
+    showToast('Portal Locked', 'Unlock portal to delete or archive incident records.', 'warning');
+    return;
+  }
+  confirmDeleteIssue(AppState.selectedIssueId);
+}
+
+function confirmDeleteIssue(issueId) {
+  const issue = AppState.issues.find(i => i.id === issueId);
+  if (!issue) return;
+
+  const confirmed = confirm(`Delete / Archive Civic Issue #${issue.id}?\n\nTitle: "${issue.title}"\nLocation: ${issue.location}\n\nNote: This will remove the record permanently from the prototype environment and update all dashboard metrics.`);
+  
+  if (confirmed) {
+    deleteIssue(issue.id);
+  }
+}
+
+function deleteIssue(issueId) {
+  const idx = AppState.issues.findIndex(i => i.id === issueId);
+  if (idx !== -1) {
+    const deleted = AppState.issues.splice(idx, 1)[0];
+    saveIssuesToStorage();
+    renderPublicIssuesList();
+    renderAuthorityPortal();
+    if (AppState.currentView === 'dashboard') {
+      initDashboardView();
+    }
+    closePublicIssueDetailModal();
+    showToast('Issue Deleted / Archived', `Incident #${issueId} removed from demo environment.`, 'info');
   }
 }
 
@@ -1634,12 +1996,16 @@ function renderAuthModalContainer() {
 
   const modal = document.createElement('div');
   modal.id = 'auth-modal';
-  modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 p-4';
+  modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 p-4 overflow-y-auto';
   
+  modal.onclick = (e) => {
+    if (e.target === modal) closeAuthModal();
+  };
+
   modal.innerHTML = `
     <div id="auth-modal-card" class="bg-surface rounded-2xl border border-outline-variant level-3-shadow max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 relative transform scale-95 transition-transform duration-300">
-      <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container-high">
-        <span class="material-symbols-outlined">close</span>
+      <button onclick="closeAuthModal()" aria-label="Close" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
 
       <!-- Auth Header -->
@@ -1662,60 +2028,72 @@ function renderAuthModalContainer() {
       </div>
 
       <!-- LOGIN FORM -->
-      <form id="auth-login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+      <form id="auth-login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4" novalidate>
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Email Address</label>
-          <input type="email" id="login-email" required placeholder="e.g. ramesh.kumar@gmail.com" class="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="login-email">Email Address</label>
+          <input type="email" id="login-email" required placeholder="e.g. citizen@example.com" class="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all" />
+          <p id="login-email-error" class="hidden text-xs text-error font-medium mt-1">Please enter a valid email address.</p>
         </div>
+
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-xs font-semibold text-on-surface-variant">Password</label>
-            <a href="javascript:void(0)" onclick="showToast('Password Reset', 'Demo password reset link sent to email.', 'info')" class="text-xs text-primary hover:underline">Forgot password?</a>
+            <label class="text-xs font-semibold text-on-surface-variant" for="login-password">Password</label>
+            <a href="javascript:void(0)" onclick="openForgotPasswordModal()" class="text-xs text-primary font-semibold hover:underline">Forgot password?</a>
           </div>
           <div class="relative">
-            <input type="password" id="login-password" required placeholder="Enter password" class="w-full h-11 pl-3.5 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
-            <button type="button" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+            <input type="password" id="login-password" required placeholder="Enter password" class="w-full h-11 pl-3.5 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all" />
+            <button type="button" aria-label="Show password" onclick="togglePasswordVisibility('login-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant p-1 hover:text-on-surface">
               <span class="material-symbols-outlined text-[18px]">visibility</span>
             </button>
           </div>
+          <p id="login-pass-error" class="hidden text-xs text-error font-medium mt-1">Password is required.</p>
         </div>
 
-        <button type="submit" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-md flex items-center justify-center gap-2 mt-2">
+        <button id="login-submit-btn" type="submit" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-md flex items-center justify-center gap-2 mt-2 transition-all">
           <span class="material-symbols-outlined text-[18px]">login</span> Sign In to JanSetu
         </button>
 
-        <!-- Quick Demo Login -->
-        <div class="pt-2 border-t border-outline-variant">
-          <span class="text-[11px] font-semibold text-on-surface-variant block mb-2 text-center">Quick Demo Profiles:</span>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" onclick="quickFillLogin('ramesh.kumar@gmail.com', 'password123')" class="p-2 bg-surface-container-low rounded-lg text-xs hover:bg-surface-container-high text-left">
-              <div class="font-bold text-on-surface">Ramesh Kumar</div>
-              <div class="text-[10px] text-on-surface-variant">Mysuru • Chamaraja</div>
-            </button>
-            <button type="button" onclick="quickFillLogin('deepa.sharma@yahoo.com', 'password123')" class="p-2 bg-surface-container-low rounded-lg text-xs hover:bg-surface-container-high text-left">
-              <div class="font-bold text-on-surface">Deepa S.</div>
-              <div class="text-[10px] text-on-surface-variant">Bengaluru • Malleshwaram</div>
-            </button>
+        <!-- Quick Demo Profiles -->
+        <div class="pt-3 border-t border-outline-variant">
+          <span class="text-[11px] font-bold text-on-surface-variant block mb-2 text-center uppercase tracking-wider">Quick Demo Profiles:</span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div onclick="quickFillLogin('ramesh.kumar@gmail.com', 'password123', 'Ramesh Kumar')" class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/60 hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col justify-between">
+              <div>
+                <div class="font-bold text-xs text-on-surface">Ramesh Kumar</div>
+                <div class="text-[10px] text-on-surface-variant mt-0.5">Mysuru • Chamaraja</div>
+              </div>
+              <div class="mt-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded self-start">Use Demo Profile</div>
+            </div>
+
+            <div onclick="quickFillLogin('deepa.sharma@yahoo.com', 'password123', 'Deepa S.')" class="p-2.5 bg-surface-container-low rounded-xl border border-outline-variant/60 hover:bg-surface-container-high transition-colors cursor-pointer flex flex-col justify-between">
+              <div>
+                <div class="font-bold text-xs text-on-surface">Deepa S.</div>
+                <div class="text-[10px] text-on-surface-variant mt-0.5">Bengaluru • Malleshwaram</div>
+              </div>
+              <div class="mt-2 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded self-start">Use Demo Profile</div>
+            </div>
           </div>
         </div>
       </form>
 
       <!-- REGISTER FORM -->
-      <form id="auth-register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-3.5 hidden">
+      <form id="auth-register-form" onsubmit="handleRegisterSubmit(event)" class="space-y-3.5 hidden" novalidate>
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Full Name</label>
-          <input type="text" id="reg-name" required placeholder="e.g. Anand Gowda" class="w-full h-10 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" required placeholder="e.g. Anand Gowda" class="w-full h-10 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all" />
+          <p id="reg-name-error" class="hidden text-xs text-error font-medium mt-1">Full name is required.</p>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Email Address</label>
-          <input type="email" id="reg-email" required placeholder="e.g. anand.gowda@gmail.com" class="w-full h-10 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" required placeholder="e.g. anand.gowda@gmail.com" class="w-full h-10 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all" />
+          <p id="reg-email-error" class="hidden text-xs text-error font-medium mt-1">Please enter a valid email address.</p>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Gender</label>
-            <select id="reg-gender" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-gender">Gender</label>
+            <select id="reg-gender" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none cursor-pointer">
               <option value="Male">Male</option>
               <option value="Female">Female</option>
               <option value="Other">Other</option>
@@ -1724,38 +2102,57 @@ function renderAuthModalContainer() {
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">State (Constant)</label>
-            <input type="text" id="reg-state" value="Karnataka" readonly class="w-full h-10 px-3.5 bg-surface-container-high border border-outline-variant rounded-xl text-xs font-bold text-primary cursor-not-allowed" />
+            <div class="flex justify-between items-center mb-1">
+              <label class="block text-xs font-semibold text-on-surface-variant">State</label>
+              <span class="text-[10px] text-primary font-bold bg-primary/10 px-1.5 py-0.5 rounded">Fixed</span>
+            </div>
+            <input type="text" id="reg-state" value="Karnataka" readonly class="w-full h-10 px-3 bg-surface-container-high border border-outline-variant rounded-xl text-xs font-bold text-primary cursor-not-allowed" />
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">District</label>
-            <select id="reg-district" onchange="handleDistrictChange(this.value)" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-district">District</label>
+            <select id="reg-district" onchange="handleDistrictChange(this.value)" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none cursor-pointer">
               <!-- Populated dynamically -->
             </select>
+            <p id="reg-district-error" class="hidden text-xs text-error font-medium mt-1">Please select a district.</p>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-on-surface-variant mb-1">Constituency</label>
-            <select id="reg-constituency" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none">
+            <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-constituency">Constituency</label>
+            <select id="reg-constituency" class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-medium focus:ring-2 focus:ring-primary outline-none cursor-pointer">
               <!-- Populated dynamically based on district -->
             </select>
+            <p id="reg-const-error" class="hidden text-xs text-error font-medium mt-1">Please select a constituency.</p>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Create Password</label>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="reg-password">Create Password</label>
           <div class="relative">
-            <input type="password" id="reg-password" required minlength="6" placeholder="At least 6 characters" class="w-full h-10 pl-3.5 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
-            <button type="button" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+            <input type="password" id="reg-password" oninput="checkPasswordStrength(this.value)" required minlength="6" placeholder="At least 6 characters" class="w-full h-10 pl-3.5 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all" />
+            <button type="button" aria-label="Show password" onclick="togglePasswordVisibility('reg-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant p-1 hover:text-on-surface">
               <span class="material-symbols-outlined text-[18px]">visibility</span>
             </button>
           </div>
+          <p id="reg-pass-error" class="hidden text-xs text-error font-medium mt-1">Password must be at least 6 characters.</p>
+
+          <!-- Password Strength Indicator -->
+          <div id="pass-strength-meter" class="hidden mt-1.5 flex items-center gap-2 text-[11px]">
+            <div class="flex-1 h-1.5 bg-surface-container-high rounded-full overflow-hidden flex">
+              <div id="pass-strength-bar" class="h-full w-0 transition-all duration-300"></div>
+            </div>
+            <span id="pass-strength-label" class="font-bold text-on-surface-variant">Weak</span>
+          </div>
         </div>
 
-        <button type="submit" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-md flex items-center justify-center gap-2 mt-2">
+        <p class="text-[11px] text-on-surface-variant flex items-center gap-1.5 mt-2">
+          <span class="material-symbols-outlined text-secondary text-[16px]">shield</span>
+          Your personal information is protected by the JanSetu Citizen Privacy Shield.
+        </p>
+
+        <button id="reg-submit-btn" type="submit" class="w-full py-3 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-md flex items-center justify-center gap-2 mt-2 transition-all">
           <span class="material-symbols-outlined text-[18px]">how_to_reg</span> Register Citizen Account
         </button>
       </form>
@@ -1791,10 +2188,13 @@ function openAuthModal(mode = 'login') {
 
   if (modal && card) {
     modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
     setTimeout(() => {
       modal.classList.remove('opacity-0');
-      card.classList.remove('scale-95');
-      card.classList.add('scale-100');
+      if (card) {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }
     }, 10);
   }
 }
@@ -1804,10 +2204,13 @@ function closeAuthModal() {
   const card = document.getElementById('auth-modal-card');
   if (modal && card) {
     modal.classList.add('opacity-0');
-    card.classList.remove('scale-100');
-    card.classList.add('scale-95');
+    if (card) {
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+    }
     setTimeout(() => {
       modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
     }, 300);
   }
 }
@@ -1846,90 +2249,229 @@ function handleDistrictChange(district) {
 function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
   if (input) {
+    const icon = btn.querySelector('span');
     if (input.type === 'password') {
       input.type = 'text';
-      btn.querySelector('span').innerText = 'visibility_off';
+      if (icon) icon.innerText = 'visibility_off';
+      btn.setAttribute('aria-label', 'Hide password');
     } else {
       input.type = 'password';
-      btn.querySelector('span').innerText = 'visibility';
+      if (icon) icon.innerText = 'visibility';
+      btn.setAttribute('aria-label', 'Show password');
     }
   }
 }
 
-function quickFillLogin(email, pass) {
-  document.getElementById('login-email').value = email;
-  document.getElementById('login-password').value = pass;
-  showToast('Demo Credentials Filled', 'Click "Sign In" to proceed.', 'info');
-}
+function checkPasswordStrength(val) {
+  const meter = document.getElementById('pass-strength-meter');
+  const bar = document.getElementById('pass-strength-bar');
+  const label = document.getElementById('pass-strength-label');
 
-function handleLoginSubmit(e) {
-  e.preventDefault();
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
+  if (!meter || !bar || !label) return;
 
-  const users = JSON.parse(localStorage.getItem('jansetu_users') || '[]');
-  const match = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+  if (!val || val.length === 0) {
+    meter.classList.add('hidden');
+    return;
+  }
 
-  if (match) {
-    AppState.currentUser = { ...match };
-    localStorage.setItem('jansetu_user', JSON.stringify(AppState.currentUser));
-    closeAuthModal();
-    updateAuthUI();
-    showToast(`Welcome back, ${match.name}!`, `Logged in to ${match.constituency} Constituency portal.`, 'success');
+  meter.classList.remove('hidden');
+
+  let strength = 0;
+  if (val.length >= 6) strength += 1;
+  if (val.length >= 10) strength += 1;
+  if (/[A-Z]/.test(val) || /[0-9]/.test(val) || /[^A-Za-z0-9]/.test(val)) strength += 1;
+
+  if (strength <= 1) {
+    bar.style.width = '33%';
+    bar.className = 'h-full bg-error transition-all duration-300';
+    label.innerText = 'Weak';
+    label.className = 'font-bold text-error';
+  } else if (strength === 2) {
+    bar.style.width = '66%';
+    bar.className = 'h-full bg-amber-500 transition-all duration-300';
+    label.innerText = 'Medium';
+    label.className = 'font-bold text-amber-600';
   } else {
-    // If not found in mock store, allow seamless login for demo
-    const dynamicUser = {
-      name: email.split('@')[0].replace('.', ' ').toUpperCase(),
-      email: email,
-      gender: "Male",
-      state: "Karnataka",
-      district: "Mysuru",
-      constituency: "Chamaraja",
-      password: password,
-      reportsCount: 1,
-      upvotesCount: 4
-    };
-    AppState.currentUser = dynamicUser;
-    localStorage.setItem('jansetu_user', JSON.stringify(dynamicUser));
-    closeAuthModal();
-    updateAuthUI();
-    showToast(`Signed In as ${dynamicUser.name}`, 'Connected to Karnataka Civic Network.', 'success');
+    bar.style.width = '100%';
+    bar.className = 'h-full bg-emerald-500 transition-all duration-300';
+    label.innerText = 'Strong';
+    label.className = 'font-bold text-emerald-600';
   }
 }
 
+function quickFillLogin(email, pass, name) {
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-password');
+  if (emailInput) emailInput.value = email;
+  if (passInput) passInput.value = pass;
+
+  // Perform smooth login
+  handleLoginSubmit(new Event('submit'));
+}
+
+function handleLoginSubmit(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-password');
+  const emailErr = document.getElementById('login-email-error');
+  const passErr = document.getElementById('login-pass-error');
+  const submitBtn = document.getElementById('login-submit-btn');
+
+  let isValid = true;
+  const email = emailInput ? emailInput.value.trim() : '';
+  const password = passInput ? passInput.value : '';
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    if (emailErr) emailErr.classList.remove('hidden');
+    if (emailInput) emailInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (emailErr) emailErr.classList.add('hidden');
+    if (emailInput) emailInput.classList.remove('border-error');
+  }
+
+  if (!password) {
+    if (passErr) passErr.classList.remove('hidden');
+    if (passInput) passInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (passErr) passErr.classList.add('hidden');
+    if (passInput) passInput.classList.remove('border-error');
+  }
+
+  if (!isValid) return;
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span> Signing in...`;
+  }
+
+  setTimeout(() => {
+    const users = JSON.parse(localStorage.getItem('jansetu_users') || '[]');
+    const match = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+
+    if (match) {
+      AppState.currentUser = { ...match };
+    } else {
+      AppState.currentUser = {
+        name: email.split('@')[0].replace('.', ' ').toUpperCase(),
+        email: email,
+        gender: "Male",
+        state: "Karnataka",
+        district: "Mysuru",
+        constituency: "Chamaraja",
+        password: password,
+        reportsCount: 1,
+        upvotesCount: 4
+      };
+    }
+
+    localStorage.setItem('jansetu_user', JSON.stringify(AppState.currentUser));
+    closeAuthModal();
+    updateAuthUI();
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">login</span> Sign In to JanSetu`;
+    }
+
+    showToast(`Welcome back, ${AppState.currentUser.name}!`, `Connected to ${AppState.currentUser.constituency} Constituency portal.`, 'success');
+  }, 400);
+}
+
 function handleRegisterSubmit(e) {
-  e.preventDefault();
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const gender = document.getElementById('reg-gender').value;
-  const state = "Karnataka"; // Constant
-  const district = document.getElementById('reg-district').value;
-  const constituency = document.getElementById('reg-constituency').value;
-  const password = document.getElementById('reg-password').value;
+  if (e && e.preventDefault) e.preventDefault();
 
-  const newUser = {
-    name,
-    email,
-    gender,
-    state,
-    district,
-    constituency,
-    password,
-    reportsCount: 0,
-    upvotesCount: 0,
-    registeredAt: new Date().toISOString()
-  };
+  const nameInput = document.getElementById('reg-name');
+  const emailInput = document.getElementById('reg-email');
+  const genderInput = document.getElementById('reg-gender');
+  const districtInput = document.getElementById('reg-district');
+  const constInput = document.getElementById('reg-constituency');
+  const passInput = document.getElementById('reg-password');
+  const submitBtn = document.getElementById('reg-submit-btn');
 
-  const users = JSON.parse(localStorage.getItem('jansetu_users') || '[]');
-  users.push(newUser);
-  localStorage.setItem('jansetu_users', JSON.stringify(users));
+  const nameErr = document.getElementById('reg-name-error');
+  const emailErr = document.getElementById('reg-email-error');
+  const passErr = document.getElementById('reg-pass-error');
 
-  AppState.currentUser = newUser;
-  localStorage.setItem('jansetu_user', JSON.stringify(newUser));
+  let isValid = true;
 
-  closeAuthModal();
-  updateAuthUI();
-  showToast(`Welcome to JanSetu AI, ${name}!`, `Citizen registered under ${constituency}, ${district}.`, 'success');
+  const name = nameInput ? nameInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim() : '';
+  const gender = genderInput ? genderInput.value : 'Male';
+  const state = "Karnataka";
+  const district = districtInput ? districtInput.value : 'Mysuru';
+  const constituency = constInput ? constInput.value : 'Chamaraja';
+  const password = passInput ? passInput.value : '';
+
+  if (!name || name.length < 2) {
+    if (nameErr) nameErr.classList.remove('hidden');
+    if (nameInput) nameInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (nameErr) nameErr.classList.add('hidden');
+    if (nameInput) nameInput.classList.remove('border-error');
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    if (emailErr) emailErr.classList.remove('hidden');
+    if (emailInput) emailInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (emailErr) emailErr.classList.add('hidden');
+    if (emailInput) emailInput.classList.remove('border-error');
+  }
+
+  if (!password || password.length < 6) {
+    if (passErr) passErr.classList.remove('hidden');
+    if (passInput) passInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (passErr) passErr.classList.add('hidden');
+    if (passInput) passInput.classList.remove('border-error');
+  }
+
+  if (!isValid) return;
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span> Creating Account...`;
+  }
+
+  setTimeout(() => {
+    const newUser = {
+      name,
+      email,
+      gender,
+      state,
+      district,
+      constituency,
+      password,
+      reportsCount: 0,
+      upvotesCount: 0,
+      registeredAt: new Date().toISOString()
+    };
+
+    const users = JSON.parse(localStorage.getItem('jansetu_users') || '[]');
+    users.push(newUser);
+    localStorage.setItem('jansetu_users', JSON.stringify(users));
+
+    AppState.currentUser = newUser;
+    localStorage.setItem('jansetu_user', JSON.stringify(newUser));
+
+    closeAuthModal();
+    updateAuthUI();
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">how_to_reg</span> Register Citizen Account`;
+    }
+
+    showToast(`Citizen account created successfully!`, `Welcome ${name} (${constituency}, ${district}).`, 'success');
+  }, 400);
 }
 
 function loginAsGuest() {
@@ -1949,18 +2491,91 @@ function loginAsGuest() {
   localStorage.setItem('jansetu_user', JSON.stringify(guestUser));
   closeAuthModal();
   updateAuthUI();
-  showToast('Guest Mode Activated', 'Exploring JanSetu AI with guest citizen privileges.', 'info');
+  showToast('Guest access enabled.', 'Exploring JanSetu AI with guest citizen privileges.', 'info');
 }
 
-function logoutUser() {
-  AppState.currentUser = null;
-  localStorage.removeItem('jansetu_user');
-  updateAuthUI();
-  closeProfileModal();
-  showToast('Logged Out', 'You have been signed out safely.', 'info');
+// FORGOT PASSWORD MODAL ENGINE
+function openForgotPasswordModal() {
+  closeAuthModal();
+
+  let modal = document.getElementById('forgot-pass-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'forgot-pass-modal';
+    modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 hidden opacity-0 transition-opacity duration-300';
+    document.body.appendChild(modal);
+  }
+
+  modal.onclick = (e) => {
+    if (e.target === modal) closeForgotPasswordModal();
+  };
+
+  modal.innerHTML = `
+    <div id="forgot-pass-card" class="bg-surface rounded-2xl border border-outline-variant level-3-shadow max-w-md w-full p-6 relative transform scale-95 transition-transform duration-300">
+      <button onclick="closeForgotPasswordModal()" aria-label="Close" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+
+      <div class="text-center mb-5">
+        <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-2 font-bold">
+          <span class="material-symbols-outlined text-2xl">lock_reset</span>
+        </div>
+        <h3 class="text-xl font-bold text-on-surface">Reset Password</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Enter your registered email to continue.</p>
+      </div>
+
+      <form onsubmit="handleForgotPasswordSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Registered Email Address</label>
+          <input type="email" id="reset-email" required placeholder="e.g. citizen@example.com" class="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none" />
+        </div>
+
+        <p class="text-[11px] text-on-surface-variant/80 italic">Demo mode — no real email is sent.</p>
+
+        <div class="flex gap-2">
+          <button type="button" onclick="closeForgotPasswordModal(); openAuthModal('login');" class="flex-1 py-2.5 bg-surface border border-outline-variant text-on-surface rounded-xl font-bold text-xs hover:bg-surface-container-high transition-colors">
+            Cancel
+          </button>
+          <button type="submit" class="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs hover:opacity-95 shadow-sm">
+            Send Reset Link
+          </button>
+        </div>
+      </form>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+  document.body.classList.add('overflow-hidden');
+  setTimeout(() => {
+    modal.classList.remove('opacity-0');
+    const card = document.getElementById('forgot-pass-card');
+    if (card) {
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+  }, 10);
 }
 
-// User Profile Drawer / Modal
+function closeForgotPasswordModal() {
+  const modal = document.getElementById('forgot-pass-modal');
+  const card = document.getElementById('forgot-pass-card');
+  if (modal) {
+    modal.classList.add('opacity-0');
+    if (card) card.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }, 300);
+  }
+}
+
+function handleForgotPasswordSubmit(e) {
+  e.preventDefault();
+  closeForgotPasswordModal();
+  showToast('Demo Reset Request Submitted', 'Demo mode — no real email is sent.', 'info');
+}
+
+// LOGGED-IN CITIZEN PROFILE DRAWER / MODAL
 function openProfileModal() {
   const user = AppState.currentUser;
   if (!user) {
@@ -1972,34 +2587,38 @@ function openProfileModal() {
   if (!profileModal) {
     profileModal = document.createElement('div');
     profileModal.id = 'user-profile-modal';
-    profileModal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4';
+    profileModal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto hidden opacity-0 transition-opacity duration-300';
     document.body.appendChild(profileModal);
   }
 
-  const initial = user.name.charAt(0).toUpperCase();
+  profileModal.onclick = (e) => {
+    if (e.target === profileModal) closeProfileModal();
+  };
+
+  const initial = user.name ? user.name.charAt(0).toUpperCase() : 'C';
 
   profileModal.innerHTML = `
-    <div class="bg-surface rounded-2xl border border-outline-variant level-3-shadow max-w-md w-full p-6 relative">
-      <button onclick="closeProfileModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container-high">
-        <span class="material-symbols-outlined">close</span>
+    <div id="user-profile-card" class="bg-surface rounded-2xl border border-outline-variant level-3-shadow max-w-md w-full p-6 relative transform scale-95 transition-transform duration-300">
+      <button onclick="closeProfileModal()" aria-label="Close" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
 
       <!-- Profile Header -->
-      <div class="flex items-center gap-4 mb-6">
-        <div class="w-16 h-16 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0">
+      <div class="flex items-center gap-4 mb-5">
+        <div class="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-2xl shadow-md shrink-0">
           ${initial}
         </div>
         <div>
           <div class="flex items-center gap-2">
             <h3 class="font-bold text-lg text-on-surface">${user.name}</h3>
-            ${user.isGuest ? '<span class="px-2 py-0.5 bg-tertiary-fixed text-on-tertiary-fixed text-[10px] font-bold rounded-full">Guest</span>' : '<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full">Verified Citizen</span>'}
+            ${user.isGuest ? '<span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 border border-amber-500/30 text-[10px] font-bold rounded-full">Guest</span>' : '<span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 text-[10px] font-bold rounded-full flex items-center gap-1"><span class="material-symbols-outlined text-[12px]">verified</span> Verified Citizen</span>'}
           </div>
-          <p class="text-xs text-on-surface-variant">${user.email}</p>
+          <p class="text-xs text-on-surface-variant font-mono mt-0.5">${user.email}</p>
         </div>
       </div>
 
-      <!-- Profile Details Bento -->
-      <div class="space-y-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant text-xs">
+      <!-- Profile Information Bento -->
+      <div class="space-y-2.5 bg-surface-container-low p-4 rounded-xl border border-outline-variant text-xs">
         <div class="flex justify-between items-center py-1 border-b border-outline-variant/60">
           <span class="text-on-surface-variant font-medium">State</span>
           <span class="font-bold text-primary">${user.state || 'Karnataka'}</span>
@@ -2018,24 +2637,34 @@ function openProfileModal() {
         </div>
       </div>
 
+      <!-- Privacy Shield Indicator -->
+      <div class="mt-3 p-3 bg-secondary/10 border border-secondary/20 rounded-xl flex items-center justify-between text-xs text-secondary">
+        <div class="flex items-center gap-2 font-bold">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+          <span>Citizen Privacy Shield Active</span>
+        </div>
+        <span class="material-symbols-outlined text-[18px]">lock</span>
+      </div>
+      <p class="text-[10px] text-on-surface-variant/80 mt-1 italic px-1">Your personal details are protected and are not displayed publicly with reported civic issues.</p>
+
       <!-- Quick Stats -->
       <div class="grid grid-cols-2 gap-3 my-4">
         <div class="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant text-center">
           <div class="font-black text-xl text-primary">${user.reportsCount || 0}</div>
-          <div class="text-[11px] text-on-surface-variant">Issues Reported</div>
+          <div class="text-[11px] text-on-surface-variant font-medium">Issues Reported</div>
         </div>
         <div class="p-3 bg-surface-container-lowest rounded-xl border border-outline-variant text-center">
           <div class="font-black text-xl text-secondary">${user.upvotesCount || 0}</div>
-          <div class="text-[11px] text-on-surface-variant">Civic Upvotes</div>
+          <div class="text-[11px] text-on-surface-variant font-medium">Civic Upvotes</div>
         </div>
       </div>
 
       <!-- Action Buttons -->
       <div class="flex gap-2">
-        <button onclick="switchView('report'); closeProfileModal();" class="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs hover:opacity-95 shadow-sm flex items-center justify-center gap-1">
+        <button onclick="switchView('report'); closeProfileModal();" class="flex-1 py-2.5 bg-primary text-white rounded-xl font-bold text-xs hover:opacity-95 shadow-sm flex items-center justify-center gap-1.5 transition-all">
           <span class="material-symbols-outlined text-[16px]">campaign</span> Report Issue
         </button>
-        <button onclick="logoutUser()" class="px-4 py-2.5 bg-surface border border-error/40 text-error rounded-xl font-bold text-xs hover:bg-error/10 transition-colors flex items-center justify-center gap-1">
+        <button onclick="confirmLogoutUser()" class="px-4 py-2.5 bg-surface border border-error/40 text-error rounded-xl font-bold text-xs hover:bg-error/10 transition-colors flex items-center justify-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">logout</span> Sign Out
         </button>
       </div>
@@ -2043,14 +2672,55 @@ function openProfileModal() {
   `;
 
   profileModal.classList.remove('hidden');
+  document.body.classList.add('overflow-hidden');
+  setTimeout(() => {
+    profileModal.classList.remove('opacity-0');
+    const card = document.getElementById('user-profile-card');
+    if (card) {
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+  }, 10);
 }
 
 function closeProfileModal() {
   const modal = document.getElementById('user-profile-modal');
+  const card = document.getElementById('user-profile-card');
   if (modal) {
-    modal.classList.add('hidden');
+    modal.classList.add('opacity-0');
+    if (card) card.classList.remove('scale-100');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }, 300);
   }
 }
+
+function confirmLogoutUser() {
+  const confirmed = confirm("Sign out of JanSetu AI?");
+  if (confirmed) {
+    logoutUser();
+  }
+}
+
+function logoutUser() {
+  AppState.currentUser = null;
+  localStorage.removeItem('jansetu_user');
+  updateAuthUI();
+  closeProfileModal();
+  showToast('Signed out successfully.', 'You have been logged out.', 'info');
+}
+
+// Global Keyboard Listener for Modal Accessibility (Escape Key)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeAuthModal();
+    closeProfileModal();
+    closeForgotPasswordModal();
+    if (typeof closeAuthorityAuthModal === 'function') closeAuthorityAuthModal();
+    if (typeof closeImagePreviewModal === 'function') closeImagePreviewModal();
+  }
+});
 
 // ==========================================
 // AUTHORITY PORTAL VERIFICATION (DEPARTMENT ID)
@@ -2076,12 +2746,16 @@ function renderAuthorityModalContainer() {
 
   const modal = document.createElement('div');
   modal.id = 'authority-auth-modal';
-  modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md hidden opacity-0 transition-opacity duration-300 p-4';
+  modal.className = 'fixed inset-0 z-[110] flex items-center justify-center bg-black/70 backdrop-blur-md hidden opacity-0 transition-opacity duration-300 p-4 overflow-y-auto';
   
+  modal.onclick = (e) => {
+    if (e.target === modal) closeAuthorityAuthModal();
+  };
+
   modal.innerHTML = `
     <div id="authority-auth-card" class="bg-surface rounded-2xl border border-primary/40 level-3-shadow max-w-md w-full p-6 relative transform scale-95 transition-transform duration-300">
-      <button onclick="closeAuthorityAuthModal()" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1 rounded-full hover:bg-surface-container-high">
-        <span class="material-symbols-outlined">close</span>
+      <button onclick="closeAuthorityAuthModal()" aria-label="Close" class="absolute top-4 right-4 text-on-surface-variant hover:text-on-surface p-1.5 rounded-full hover:bg-surface-container-high transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
 
       <!-- Authority Header -->
@@ -2089,15 +2763,20 @@ function renderAuthorityModalContainer() {
         <div class="w-14 h-14 rounded-2xl bg-primary text-white flex items-center justify-center font-black text-2xl mx-auto mb-2 shadow-lg ring-4 ring-primary/20">
           <span class="material-symbols-outlined text-3xl">shield_person</span>
         </div>
-        <div class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-[11px] mb-1">
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary font-bold text-[11px] mb-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
           Government of Karnataka • Official Portal
         </div>
         <h2 class="text-2xl font-black text-on-surface">Authority Portal Login</h2>
         <p class="text-xs text-on-surface-variant mt-1">Authorized access for Municipal Commissioners, Ward Officers & Field Teams</p>
+        <p class="text-[11px] font-semibold text-secondary flex items-center justify-center gap-1 mt-1.5">
+          <span class="material-symbols-outlined text-[14px]">lock</span>
+          Authorized personnel only • Secure demo access
+        </p>
       </div>
 
       <!-- Department ID Verification Form -->
-      <form id="authority-auth-form" onsubmit="handleAuthorityLoginSubmit(event)" class="space-y-4">
+      <form id="authority-auth-form" onsubmit="handleAuthorityLoginSubmit(event)" class="space-y-4" novalidate>
         <div>
           <div class="flex justify-between items-center mb-1">
             <label class="block text-xs font-bold text-on-surface" for="auth-dept-id">
@@ -2110,28 +2789,31 @@ function renderAuthorityModalContainer() {
               type="text" 
               id="auth-dept-id" 
               required 
+              maxlength="6"
               value="123456" 
-              placeholder="e.g. 123456 or MCC-123456" 
+              oninput="validateOfficerIdInput(this)"
+              placeholder="e.g. 123456" 
               class="w-full h-11 pl-10 pr-4 bg-surface-container-lowest border-2 border-primary/40 rounded-xl text-sm font-mono font-bold text-primary focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
             />
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">badge</span>
           </div>
+          <p id="auth-dept-id-error" class="hidden text-xs text-error font-medium mt-1">Officer ID must be exactly 6 numeric digits.</p>
           <p class="text-[11px] text-on-surface-variant mt-1">Enter your 6-digit Department ID (Try example: <code class="bg-surface-container-high px-1 py-0.5 rounded font-mono font-bold text-primary cursor-pointer" onclick="quickFillAuthorityId('123456')">123456</code>)</p>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Municipal Department / Division</label>
-          <select id="auth-dept-div" class="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-semibold text-on-surface focus:ring-2 focus:ring-primary outline-none">
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="auth-dept-div">Municipal Department / Division</label>
+          <select id="auth-dept-div" class="w-full h-11 px-3.5 bg-surface-container-lowest border border-outline-variant rounded-xl text-xs font-semibold text-on-surface focus:ring-2 focus:ring-primary outline-none cursor-pointer">
             <option value="Mysuru City Corporation (MCC) - Division 1">Mysuru City Corporation (MCC) - Division 1</option>
             <option value="Bruhat Bengaluru Mahanagara Palike (BBMP) - South">Bruhat Bengaluru Mahanagara Palike (BBMP) - South</option>
             <option value="Hubballi-Dharwad Municipal Corporation (HDMC)">Hubballi-Dharwad Municipal Corporation (HDMC)</option>
+            <option value="Belagavi City Corporation">Belagavi City Corporation</option>
             <option value="Karnataka PWD Road Infrastructure Cell">Karnataka PWD Road Infrastructure Cell</option>
-            <option value="CHESCOM / BESCOM Electrical Unit">CHESCOM / BESCOM Electrical Unit</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant mb-1">Security PIN / Passcode</label>
+          <label class="block text-xs font-semibold text-on-surface-variant mb-1" for="auth-dept-pin">Security PIN / Passcode</label>
           <div class="relative">
             <input 
               type="password" 
@@ -2139,16 +2821,17 @@ function renderAuthorityModalContainer() {
               required 
               value="1234" 
               placeholder="Enter PIN (Default: 1234)" 
-              class="w-full h-11 pl-10 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary outline-none"
+              class="w-full h-11 pl-10 pr-10 bg-surface-container-lowest border border-outline-variant rounded-xl text-sm font-mono focus:ring-2 focus:ring-primary outline-none transition-all"
             />
             <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">key</span>
-            <button type="button" onclick="togglePasswordVisibility('auth-dept-pin', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+            <button type="button" aria-label="Show PIN" onclick="togglePasswordVisibility('auth-dept-pin', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant p-1 hover:text-on-surface">
               <span class="material-symbols-outlined text-[18px]">visibility</span>
             </button>
           </div>
+          <p id="auth-dept-pin-error" class="hidden text-xs text-error font-medium mt-1">Security PIN is required.</p>
         </div>
 
-        <button type="submit" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-lg flex items-center justify-center gap-2 mt-2">
+        <button id="auth-login-submit-btn" type="submit" class="w-full py-3.5 bg-primary text-white rounded-xl font-bold text-sm hover:opacity-95 shadow-md flex items-center justify-center gap-2 mt-2 transition-all">
           <span class="material-symbols-outlined text-[18px]">verified_user</span>
           Verify & Enter Authority Console
         </button>
@@ -2158,11 +2841,28 @@ function renderAuthorityModalContainer() {
           <span class="material-symbols-outlined text-[16px]">touch_app</span>
           Quick Demo Login with ID: 123456
         </button>
+
+        <p class="text-[11px] text-center text-on-surface-variant/80 italic mt-3 pt-3 border-t border-outline-variant">
+          Prototype access • No real government credentials are required
+        </p>
       </form>
     </div>
   `;
 
   document.body.appendChild(modal);
+}
+
+function validateOfficerIdInput(input) {
+  if (!input) return;
+  input.value = input.value.replace(/[^0-9]/g, '').slice(0, 6);
+  const err = document.getElementById('auth-dept-id-error');
+  if (input.value.length > 0 && input.value.length < 6) {
+    if (err) err.classList.remove('hidden');
+    input.classList.add('border-error');
+  } else {
+    if (err) err.classList.add('hidden');
+    input.classList.remove('border-error');
+  }
 }
 
 function openAuthorityAuthModal(targetIssueId = null) {
@@ -2173,10 +2873,13 @@ function openAuthorityAuthModal(targetIssueId = null) {
   
   if (modal && card) {
     modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
     setTimeout(() => {
       modal.classList.remove('opacity-0');
-      card.classList.remove('scale-95');
-      card.classList.add('scale-100');
+      if (card) {
+        card.classList.remove('scale-95');
+        card.classList.add('scale-100');
+      }
     }, 10);
   }
 }
@@ -2186,51 +2889,96 @@ function closeAuthorityAuthModal() {
   const card = document.getElementById('authority-auth-card');
   if (modal && card) {
     modal.classList.add('opacity-0');
-    card.classList.remove('scale-100');
-    card.classList.add('scale-95');
+    if (card) {
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+    }
     setTimeout(() => {
       modal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
     }, 300);
   }
 }
 
 function quickFillAuthorityId(id) {
   const input = document.getElementById('auth-dept-id');
+  const pinInput = document.getElementById('auth-dept-pin');
   if (input) input.value = id;
+  if (pinInput) pinInput.value = '1234';
+  validateOfficerIdInput(input);
 }
 
 function handleAuthorityLoginSubmit(e) {
-  e.preventDefault();
+  if (e && e.preventDefault) e.preventDefault();
+
   const deptIdInput = document.getElementById('auth-dept-id');
   const divSelect = document.getElementById('auth-dept-div');
-  const deptId = deptIdInput ? (deptIdInput.value.trim() || '123456') : '123456';
-  const division = divSelect ? divSelect.value : 'Mysuru City Corporation (MCC)';
+  const pinInput = document.getElementById('auth-dept-pin');
+  const submitBtn = document.getElementById('auth-login-submit-btn');
 
-  AppState.isAuthorityAuthenticated = true;
-  AppState.currentOfficerId = deptId;
-  AppState.currentOfficerDept = division;
+  const idErr = document.getElementById('auth-dept-id-error');
+  const pinErr = document.getElementById('auth-dept-pin-error');
 
-  sessionStorage.setItem('jansetu_auth_officer', JSON.stringify({
-    id: deptId,
-    dept: division,
-    authenticatedAt: new Date().toISOString()
-  }));
+  let isValid = true;
+  const deptId = deptIdInput ? deptIdInput.value.trim() : '';
+  const pin = pinInput ? pinInput.value : '';
+  const division = divSelect ? divSelect.value : 'Mysuru City Corporation (MCC) - Division 1';
 
-  closeAuthorityAuthModal();
-
-  showToast('Officer Verified • ID: ' + deptId, `Access Granted to ${division} Triage Console.`, 'success');
-
-  // Check if we are on standalone authority.html or in SPA
-  if (window.location.pathname.endsWith('authority.html')) {
-    renderAuthorityPortal();
+  if (!deptId || deptId.length !== 6 || !/^\d{6}$/.test(deptId)) {
+    if (idErr) idErr.classList.remove('hidden');
+    if (deptIdInput) deptIdInput.classList.add('border-error');
+    isValid = false;
   } else {
-    // If targeted a specific issue
-    if (AppState.targetAuthorityIssueId) {
-      AppState.selectedIssueId = AppState.targetAuthorityIssueId;
-      AppState.targetAuthorityIssueId = null;
-    }
-    switchView('authority');
+    if (idErr) idErr.classList.add('hidden');
+    if (deptIdInput) deptIdInput.classList.remove('border-error');
   }
+
+  if (!pin) {
+    if (pinErr) pinErr.classList.remove('hidden');
+    if (pinInput) pinInput.classList.add('border-error');
+    isValid = false;
+  } else {
+    if (pinErr) pinErr.classList.add('hidden');
+    if (pinInput) pinInput.classList.remove('border-error');
+  }
+
+  if (!isValid) return;
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<span class="w-4 h-4 rounded-full border-2 border-white border-t-transparent animate-spin"></span> Verifying Officer Session...`;
+  }
+
+  setTimeout(() => {
+    AppState.isAuthorityAuthenticated = true;
+    AppState.currentOfficerId = deptId;
+    AppState.currentOfficerDept = division;
+
+    sessionStorage.setItem('jansetu_auth_officer', JSON.stringify({
+      id: deptId,
+      dept: division,
+      authenticatedAt: new Date().toISOString()
+    }));
+
+    closeAuthorityAuthModal();
+
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">verified_user</span> Verify & Enter Authority Console`;
+    }
+
+    showToast('Officer Verified • ID: ' + deptId, `Access Granted to ${division} Triage Console.`, 'success');
+
+    if (window.location.pathname.endsWith('authority.html')) {
+      renderAuthorityPortal();
+    } else {
+      if (AppState.targetAuthorityIssueId) {
+        AppState.selectedIssueId = AppState.targetAuthorityIssueId;
+        AppState.targetAuthorityIssueId = null;
+      }
+      switchView('authority');
+    }
+  }, 400);
 }
 
 function logoutAuthority() {

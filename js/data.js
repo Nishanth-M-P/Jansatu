@@ -5,11 +5,11 @@
 const INITIAL_ISSUES = [
   {
     id: "JS-2026-00421",
-    title: "Severe Garbage Accumulation near Govt Primary School",
+    title: "Garbage Accumulation Near Government School",
     category: "Sanitation",
     priority: "HIGH",
-    status: "New",
-    location: "Near Govt School, Mysuru",
+    status: "Reported",
+    location: "Near Govt Primary School, Vani Vilas Mohalla",
     ward: "Ward 42, Vani Vilas Mohalla",
     district: "Mysuru",
     assembly: "Chamaraja",
@@ -23,14 +23,14 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNsxQb-EkJxfp4baqg-0F2t43afuciRrn_-Zv9jW3BoFHmrLp_DBOeXqaJY-gjvUQbNL0Xuif86IVa4-c6037D1QTEV643Hodh7CkaQzFt8ZrmXA_DlNxbHHIyftxKD6xg-up44Lx9rC34u3n5qPWDvxJtC1ZttCYwSF0o-Eq__47iOkNxiPyO3dSADn6Vx0CJ4rIPHiKgKF0oH7MUhJMvxLJd4BdT89tGOgISWJblIgCF9Ah0Ddr9yA"
+      "https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "There is garbage everywhere near the government primary school entrance causing foul smell and health risks to schoolchildren.",
-    aiSummary: "Multiple user reports indicate severe sanitation hazard near school premises. Immediate clearance recommended to prevent health risks.",
+    description: "Uncollected solid waste dumped right near the primary school gate creating health hazards for children.",
+    aiSummary: "Severe organic and solid waste accumulation within 15 meters of educational facility entrance.",
     aiConfidence: 94,
-    detectedObjects: ["Garbage bags", "Solid waste", "Public footpath", "School boundary wall"],
+    detectedObjects: ["Garbage bags", "Solid waste", "Public footpath", "School wall"],
     recommendedAuthority: "MCC Health & Sanitation Division",
-    suggestedAction: "Emergency solid waste clearance & sanitization sweep",
+    suggestedAction: "Emergency solid waste clearance & disinfectant spraying squad",
     assignedTo: null,
     resolutionProof: null,
     upvotes: 42
@@ -40,8 +40,8 @@ const INITIAL_ISSUES = [
     title: "Dangerous Pothole on Ring Road Junction",
     category: "Roads",
     priority: "HIGH",
-    status: "Under Review",
-    location: "Ring Road Jct, Outer Ring Road",
+    status: "In Progress",
+    location: "Outer Ring Road Junction, Dattagalli",
     ward: "Ward 18, Dattagalli",
     district: "Mysuru",
     assembly: "Chamundeshwari",
@@ -55,14 +55,14 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC9H8D4s0giwvwvOQ-CFhLb0RjI06xOuY2axYf3RIOL6SJwQ1pgNkHNOWVlUKNWDeqhh4YTOtTfDmQxgnPltqkH3Lqw065GkT9QefLyO7XL4JwI65cDm8hK0Jj-ZSGb87ovCU7QQgW9-vKKXnU6pL_gk6ninIoodRiVk_PmWB60ta-15vB27kQi4Y8ddjhXGUfD2hek_V07963-gt4p4ettaVUdjDTrSnAFtG3fkar3Z_htJD1CBrtRiA"
+      "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Large 2-foot wide pothole causing 2-wheelers to skid near the signal.",
-    aiSummary: "Road surface integrity failure detected on primary junction. High traffic zone skidding hazard.",
+    description: "Large 2-foot wide asphalt fissure causing two-wheelers to skid dangerously near traffic signal.",
+    aiSummary: "Road surface integrity failure detected on primary junction. Skidding hazard for commuter traffic.",
     aiConfidence: 91,
     detectedObjects: ["Asphalt fissure", "Pothole cavity", "Traffic lane"],
     recommendedAuthority: "PWD Road Maintenance Division",
-    suggestedAction: "Cold-mix asphalt patch resurfacing and warning cones",
+    suggestedAction: "Cold-mix asphalt patch resurfacing and warning barricades",
     assignedTo: "PWD Road Maintenance Crew 4",
     resolutionProof: null,
     upvotes: 89
@@ -87,12 +87,12 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCnEAFQGmk_abQC1cGNifekTHo2_lr6u6soz4ofOsYl2FN_F5np9L3P4dFly8SldOGEV2OPf8oYFVEW-uqOnj7FLKLbOHB2d1TB0LsJ74FWkcYQFKhx7JCb2bt9TVaZUPCMIE31FFoLPbxdyKNh0AaHnDvvlSZraS07FG3Grap9IsSpabjvt7HLfhn_jBvTTFBBgvXFAMhQgU0m6UEyt6hv0eredW-hgtymwQHjMyEpwtTkAg45mNdFVw"
+      "https://images.unsplash.com/photo-1527066579998-dbbae57f45ce?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Drinking water pipeline ruptured under sidewalk, wasting potable water for 24h.",
-    aiSummary: "Pressurized potable water distribution conduit breach. Repaired and pressure verified.",
+    description: "Ruptured municipal drinking water pipe under sidewalk causing continuous water loss for 24h.",
+    aiSummary: "Pressurized potable water distribution conduit breach. Joint sealed and line pressure restored.",
     aiConfidence: 96,
-    detectedObjects: ["Water pipe joint", "Water leakage", "Excavation area"],
+    detectedObjects: ["Water pipe joint", "Water leakage", "Sidewalk excavation"],
     recommendedAuthority: "Mysuru Urban Water Supply Dept",
     suggestedAction: "Replace ruptured elbow joint with reinforced coupling",
     assignedTo: "Mysuru Urban Water Supply Dept",
@@ -101,14 +101,14 @@ const INITIAL_ISSUES = [
   },
   {
     id: "JS-2026-00418",
-    title: "Exposed High-Tension Electrical Cable near Footpath",
+    title: "Exposed High-Tension Cable Near Footpath",
     category: "Electricity",
     priority: "HIGH",
     status: "Assigned",
     location: "Hebbal Industrial Area 3rd Phase",
     ward: "Ward 05, Hebbal",
     district: "Mysuru",
-    assembly: "Narasimharaja",
+    assembly: "Chamaraja",
     coordinates: [12.3610, 76.6022],
     reportedAt: "4 hours ago",
     date: "2026-08-25",
@@ -119,25 +119,25 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNglpP62q-wJ2o-Wwdr6kr8VL42wdkIZZ9RZcKwZVTV3CLxj50L8zOAf5Mf2auFc2gnnkZ-B8ig4mhCbjlohbUPwkPn3r53YV0VCwMRrIsRzEixEFgU8mAqpdka0TdpcNEeq7wNF1uhx91GL3a1wZD8Fbi6OAOZXxRk5-CpJwCP5yA5ju0XZmEXWoqqryAPsxTr9ywhGscJjeNnuDzDrItfeuezyuyqvhJEwf2zIa0nrqrXBp8_IIXiA"
+      "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Live cable dangling from junction box right next to pedestrian walkway.",
-    aiSummary: "Severe electrical hazard. Uninsulated conductor exposed in public pedestrian right-of-way.",
+    description: "Live dangling electrical cable right next to pedestrian walkway near industrial bus stop.",
+    aiSummary: "Severe electrocution risk. Uninsulated high-voltage line hanging within 1 meter of pavement.",
     aiConfidence: 95,
     detectedObjects: ["Electric cable", "Transformer panel", "Pedestrian walkway"],
     recommendedAuthority: "CHESCOM Rapid Response Unit",
-    suggestedAction: "Isolate power line, re-insulate cable, lock junction cabinet",
-    assignedTo: "CHESCOM Rapid Response Unit 2",
+    suggestedAction: "De-energize circuit, fit protective conduit sheath, lock box",
+    assignedTo: "CHESCOM Rapid Response Squad 2",
     resolutionProof: null,
     upvotes: 67
   },
   {
     id: "JS-2026-00417",
-    title: "Cleaned Park Pathway & Installed Segregated Bins",
+    title: "Park Waste Cleared and Bins Installed",
     category: "Sanitation",
     priority: "LOW",
     status: "Resolved",
-    location: "Northside Children's Park",
+    location: "Northside Children's Park, Gokulam",
     ward: "Ward 12, Gokulam 3rd Stage",
     district: "Mysuru",
     assembly: "Chamaraja",
@@ -151,24 +151,24 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuBf7SjueGz71LlzmrRuq9lMo8jL3osYBt6ZHtiFgoOZn1ucSZfjBGbTElqqb8U311Ve1mHmds6OdNUQyD6QssIKW2OoyZ43uJdwlNwI4gfHTSbqxsI_GDQV6u95nJ7XyDWLrDoHSo40T5rOsydVOV1r09ObfsZQfwtOTb5ZsvuONau28NSL9N0z2rxG2LRI-RZQDLY8rcqtWxSwfslyjmGWp6VAooal-CkLrJa47hkZxeNOuy64Mxc88g"
+      "https://images.unsplash.com/photo-1567393528677-d6adae7d4a0a?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Children park littered with plastic waste and broken glass bottles.",
-    aiSummary: "Sanitation restoration complete. 120kg waste cleared and twin smart dustbins placed.",
+    description: "Children play area cleared of plastic litter and new dual segregated bins installed.",
+    aiSummary: "Park sanitation sweep complete. 120kg waste cleared and twin waste collection receptacles placed.",
     aiConfidence: 97,
-    detectedObjects: ["Park pathway", "Greenery", "Municipal dustbins"],
+    detectedObjects: ["Park pathway", "Greenery", "Segregated dustbins"],
     recommendedAuthority: "MCC Parks & Recreation Wing",
     suggestedAction: "Install segregated twin waste bins and schedule daily collection",
     assignedTo: "MCC Health & Sanitation Division",
-    resolutionProof: "Cleaned and sanitized with regular monitoring schedule set.",
+    resolutionProof: "Cleaned and sanitized with regular daily clearing schedule set.",
     upvotes: 145
   },
   {
     id: "JS-2026-00416",
-    title: "Open Drainage Cover on Main Commercial Street",
+    title: "Open Drainage Cover on Commercial Street",
     category: "Roads",
     priority: "HIGH",
-    status: "Under Review",
+    status: "In Progress",
     location: "Devaraj Urs Road near Sub-Urban Bus Stand",
     ward: "Ward 35, Shivarampet",
     district: "Mysuru",
@@ -183,24 +183,24 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNglpP62q-wJ2o-Wwdr6kr8VL42wdkIZZ9RZcKwZVTV3CLxj50L8zOAf5Mf2auFc2gnnkZ-B8ig4mhCbjlohbUPwkPn3r53YV0VCwMRrIsRzEixEFgU8mAqpdka0TdpcNEeq7wNF1uhx91GL3a1wZD8Fbi6OAOZXxRk5-CpJwCP5yA5ju0XZmEXWoqqryAPsxTr9ywhGscJjeNnuDzDrItfeuezyuyqvhJEwf2zIa0nrqrXBp8_IIXiA"
+      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Concrete slab over storm drain collapsed, leaving an open trap on busy market street.",
+    description: "Concrete slab over storm drain collapsed, leaving an open trap on busy commercial market street.",
     aiSummary: "Structural collapse of stormwater drain cover on high-density pedestrian thoroughfare.",
     aiConfidence: 93,
     detectedObjects: ["Open manhole", "Collapsed concrete slab", "Road surface"],
     recommendedAuthority: "MCC Civil Engineering Cell",
-    suggestedAction: "Deploy heavy cast iron slab cover and seal edges",
+    suggestedAction: "Deploy heavy cast iron slab cover and seal edges with concrete mortar",
     assignedTo: "MCC Civil Engineering Cell",
     resolutionProof: null,
     upvotes: 104
   },
   {
     id: "JS-2026-00415",
-    title: "Severe Stormwater Drain Overflow & Road Flooding",
+    title: "Blocked Drainage Near Residential Area",
     category: "Water",
     priority: "HIGH",
-    status: "Under Review",
+    status: "In Progress",
     location: "16th Main Road, BTM 2nd Stage",
     ward: "Ward 176, BTM Layout",
     district: "Bengaluru Urban",
@@ -215,9 +215,9 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCnEAFQGmk_abQC1cGNifekTHo2_lr6u6soz4ofOsYl2FN_F5np9L3P4dFly8SldOGEV2OPf8oYFVEW-uqOnj7FLKLbOHB2d1TB0LsJ74FWkcYQFKhx7JCb2bt9TVaZUPCMIE31FFoLPbxdyKNh0AaHnDvvlSZraS07FG3Grap9IsSpabjvt7HLfhn_jBvTTFBBgvXFAMhQgU0m6UEyt6hv0eredW-hgtymwQHjMyEpwtTkAg45mNdFVw"
+      "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Clogged stormwater drain causing 1.5 ft waterlogging on busy junction near BTM lake.",
+    description: "Clogged stormwater drain causing 1.5 ft waterlogging on busy residential junction.",
     aiSummary: "Urban stormwater conduit blockage causing localized flash flooding on arterial link.",
     aiConfidence: 95,
     detectedObjects: ["Flooded street", "Stormwater grate", "Trapped vehicles"],
@@ -229,7 +229,7 @@ const INITIAL_ISSUES = [
   },
   {
     id: "JS-2026-00414",
-    title: "Broken Streetlight Array Plunging Commercial Lane in Darkness",
+    title: "Streetlight Not Working on Main Road",
     category: "Electricity",
     priority: "MED",
     status: "Assigned",
@@ -247,10 +247,10 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDNglpP62q-wJ2o-Wwdr6kr8VL42wdkIZZ9RZcKwZVTV3CLxj50L8zOAf5Mf2auFc2gnnkZ-B8ig4mhCbjlohbUPwkPn3r53YV0VCwMRrIsRzEixEFgU8mAqpdka0TdpcNEeq7wNF1uhx91GL3a1wZD8Fbi6OAOZXxRk5-CpJwCP5yA5ju0XZmEXWoqqryAPsxTr9ywhGscJjeNnuDzDrItfeuezyuyqvhJEwf2zIa0nrqrXBp8_IIXiA"
+      "https://images.unsplash.com/photo-1508873696983-2df515122519?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "4 streetlights in sequence have been dead for 3 nights, causing pedestrian safety issues.",
-    aiSummary: "Multiple sequential LED fixture circuit failure along commercial pedestrian corridor.",
+    description: "Four consecutive streetlights out of service for 3 nights on busy pedestrian market street.",
+    aiSummary: "Sequential LED fixture circuit failure along commercial pedestrian corridor.",
     aiConfidence: 92,
     detectedObjects: ["Streetlight pole", "Unlit fixture", "Market pathway"],
     recommendedAuthority: "BESCOM West Circle / BBMP Electrical",
@@ -261,10 +261,10 @@ const INITIAL_ISSUES = [
   },
   {
     id: "JS-2026-00413",
-    title: "Dangerous Crater on Lamington Road Commercial Hub",
+    title: "Dangerous Pothole on Lamington Road Signal",
     category: "Roads",
     priority: "HIGH",
-    status: "Under Review",
+    status: "Reported",
     location: "Opposite Town Hall, Lamington Road",
     ward: "Ward 22, Vidyanagar",
     district: "Dharwad",
@@ -279,9 +279,9 @@ const INITIAL_ISSUES = [
       verified: true
     },
     images: [
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuC9H8D4s0giwvwvOQ-CFhLb0RjI06xOuY2axYf3RIOL6SJwQ1pgNkHNOWVlUKNWDeqhh4YTOtTfDmQxgnPltqkH3Lqw065GkT9QefLyO7XL4JwI65cDm8hK0Jj-ZSGb87ovCU7QQgW9-vKKXnU6pL_gk6ninIoodRiVk_PmWB60ta-15vB27kQi4Y8ddjhXGUfD2hek_V07963-gt4p4ettaVUdjDTrSnAFtG3fkar3Z_htJD1CBrtRiA"
+      "https://images.unsplash.com/photo-1584463673380-0d25b5bdeb66?auto=format&fit=crop&w=800&q=80"
     ],
-    description: "Huge asphalt crater causing buses and autos to swerve dangerously near the market signal.",
+    description: "Deep asphalt crater causing city buses and auto-rickshaws to swerve dangerously.",
     aiSummary: "Sub-base asphalt degradation forming severe traffic safety obstruction on bus route.",
     aiConfidence: 94,
     detectedObjects: ["Deep asphalt crater", "Bus lane", "Road crack"],
@@ -290,6 +290,102 @@ const INITIAL_ISSUES = [
     assignedTo: null,
     resolutionProof: null,
     upvotes: 91
+  },
+  {
+    id: "JS-2026-00412",
+    title: "Overflowing Waste Bin Near Market Circle",
+    category: "Sanitation",
+    priority: "MED",
+    status: "Reported",
+    location: "Subhash Nagar Market Road",
+    ward: "Ward 12, Tilakwadi",
+    district: "Belagavi",
+    assembly: "Belagavi Uttar",
+    coordinates: [15.8497, 74.5089],
+    reportedAt: "5 hours ago",
+    date: "2026-08-25",
+    reporter: {
+      name: "Sunil Patil",
+      phone: "+91 98442 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Public garbage container overflowing onto vegetable vendor area, causing stray animal nuisance.",
+    aiSummary: "Municipal waste bin overflow beyond 100% capacity in public market zone.",
+    aiConfidence: 90,
+    detectedObjects: ["Overflowing dumpster", "Plastic waste", "Market street"],
+    recommendedAuthority: "Belagavi City Corporation Sanitation Cell",
+    suggestedAction: "Dispatch compactor truck and sanitize surrounding area",
+    assignedTo: null,
+    resolutionProof: null,
+    upvotes: 38
+  },
+  {
+    id: "JS-2026-00411",
+    title: "Water Pipeline Rupture Near Bus Terminus",
+    category: "Water",
+    priority: "HIGH",
+    status: "Assigned",
+    location: "Station Road, Near Central Bus Stand",
+    ward: "Ward 18, Station Road",
+    district: "Kalaburagi",
+    assembly: "Kalaburagi Dakshin",
+    coordinates: [17.3297, 76.8343],
+    reportedAt: "8 hours ago",
+    date: "2026-08-25",
+    reporter: {
+      name: "Mohammed Ibrahim",
+      phone: "+91 99801 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1518837695005-2083093ee35b?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Underground main distribution pipe burst flooding street and interrupting local drinking water supply.",
+    aiSummary: "Major water main pressure rupture. Sub-surface erosion and supply disruption detected.",
+    aiConfidence: 96,
+    detectedObjects: ["Flooded asphalt", "Gushing water pipe", "Bus terminus road"],
+    recommendedAuthority: "Kalaburagi Urban Water Supply Board",
+    suggestedAction: "Isolate main valve, repair 150mm pipe section, seal excavation",
+    assignedTo: "KUWSB Repair Crew 1",
+    resolutionProof: null,
+    upvotes: 73
+  },
+  {
+    id: "JS-2026-00410",
+    title: "Broken Streetlight Poles Along Main Road",
+    category: "Electricity",
+    priority: "MED",
+    status: "Reported",
+    location: "Balaraj Urs Road near Town Hall",
+    ward: "Ward 10, Gandhi Bazaar",
+    district: "Shivamogga",
+    assembly: "Shivamogga",
+    coordinates: [13.9299, 75.5681],
+    reportedAt: "12 hours ago",
+    date: "2026-08-24",
+    reporter: {
+      name: "Kiran Kumar",
+      phone: "+91 94488 *****",
+      isProtected: true,
+      verified: true
+    },
+    images: [
+      "https://images.unsplash.com/photo-1558441719-23451ead3528?auto=format&fit=crop&w=800&q=80"
+    ],
+    description: "Tilted light pole with hanging fixture following heavy rainfall.",
+    aiSummary: "Structural instability of street lighting pole near traffic junction.",
+    aiConfidence: 89,
+    detectedObjects: ["Streetlight pole", "Hanging light housing", "Roadside curve"],
+    recommendedAuthority: "MESCOM Shivamogga Urban Division",
+    suggestedAction: "Straighten pole base foundation and secure wiring junction",
+    assignedTo: null,
+    resolutionProof: null,
+    upvotes: 41
   }
 ];
 
