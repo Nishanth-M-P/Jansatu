@@ -1,4 +1,4 @@
-# 🏛️ JanSetu AI (ಜನಸೇತು AI)
+# 🏛️ JanSetu AI
 > **Your Voice. Your Rights. Your Community.**
 > *AI-Powered Civic Accountability & Rapid Municipal Incident Resolution Platform for Karnataka.*
 
@@ -6,25 +6,25 @@
 
 ## 🌟 Overview
 
-**JanSetu AI** is a modern, bilingual civic-tech platform that empowers citizens to report community issues (potholes, garbage dumps, pipeline leaks, electrical hazards) and connects them directly with Karnataka Municipal Corporations (MCC, BBMP, HDMC) through **Multimodal AI Vision & Audio Triage**.
+**JanSetu AI** is a modern civic-tech platform that empowers citizens to report community issues (potholes, garbage dumps, pipeline leaks, electrical hazards) and connects them directly with Karnataka Municipal Corporations (MCC, BBMP, HDMC) through **Multimodal AI Vision & Audio Triage**.
 
 ---
 
 ## 🚀 Key Features
 
 ### 1. 🤖 Multimodal AI Vision & Audio Triage
-- **Photo Evidence Analysis**: Powered by simulated Gemini Vision for instant hazard categorization, severity scoring (**HIGH / MED / LOW**), and bounding box detection.
-- **Voice Note Recording**: Interactive audio waveform visualizer supporting bilingual voice descriptions in English and Kannada.
+- **Photo Evidence Analysis**: Powered by AI Vision for instant hazard categorization, severity scoring (**HIGH / MED / LOW**), and bounding box detection.
+- **Voice Note Recording**: Interactive audio waveform visualizer supporting voice descriptions.
 - **GPS Jurisdictional Mapping**: Auto-detects location and routes incidents to the appropriate municipal corporation ward.
 
 ### 2. 📜 Human Rights Civic Awareness Marquee
-- Continuous, smooth bilingual ticker highlighting fundamental constitutional rights:
-  - *Right to Equality* / ಸಮಾನತೆಯ ಹಕ್ಕು
-  - *Right to Freedom of Speech* / ಅಭಿವ್ಯಕ್ತಿ ಸ್ವಾತಂತ್ರ್ಯದ ಹಕ್ಕು
-  - *Right to Life & Liberty* / ಜೀವಿಸುವ ಮತ್ತು ವೈಯಕ್ತಿಕ ಸ್ವಾತಂತ್ರ್ಯದ ಹಕ್ಕು
-  - *Right to Education* / ಶಿಕ್ಷಣದ ಹಕ್ಕು
-  - *Right to Clean Environment* / ಸ್ವಚ್ಛ ಪರಿಸರದ ಹಕ್ಕು
-  - *Right to Information (RTI)* / ಮಾಹಿತಿ ಹಕ್ಕು (RTI)
+- Continuous, smooth ticker highlighting fundamental constitutional rights:
+  - *Right to Equality*
+  - *Right to Freedom of Speech*
+  - *Right to Life & Liberty*
+  - *Right to Education*
+  - *Right to Clean Environment*
+  - *Right to Information (RTI)*
 
 ### 3. 🗺️ Public Civic Issues Dashboard & Live Map
 - Interactive **Leaflet.js** map with color-coded, pulsing priority pins.
@@ -47,15 +47,15 @@
 - Instant 1-click **"Use as Guest"** mode and pre-configured demo profiles (*Ramesh Kumar - Mysuru*, *Deepa S. - Bengaluru*).
 - Whistleblower **Privacy Identity Shield** for encrypted anonymous reporting.
 
-### 7. 🌐 Bilingual (English / ಕನ್ನಡ) & Dark Mode
-- Seamless single-line header and instant language switcher (`English` $\leftrightarrow$ `ಕನ್ನಡ`).
+### 7. 🌐 Language & Dark Mode Options
+- Seamless single-line header and instant language controls.
 - Dark mode toggle with persistent local theme synchronization.
 
 ---
 
 ## 🛠️ Tech Stack & Architecture
 
-- **Frontend**: HTML5, Tailwind CSS, Google Fonts (`Inter`, `Geist`, `Noto Sans Kannada`), Google Material Symbols.
+- **Frontend**: HTML5, Tailwind CSS, Google Fonts (`Inter`, `Geist`), Google Material Symbols.
 - **Mapping Engine**: Leaflet.js with CartoDB Voyager / DarkMatter map tiles.
 - **State Management**: Zero-dependency client-side architecture with persistent `localStorage` synchronization across Citizen and Authority portals.
 - **Backend/Server**: Native static server (`server.ps1`).
